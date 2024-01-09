@@ -2,6 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import * as fs from 'fs'
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { UpdateProfileDto } from './profile.dto';
+import { ENVIRONMENTS } from 'src/environments';
+import * as dotenv from 'dotenv';
+
+dotenv.config()
 
 @Injectable()
 export class ProfileService {
@@ -9,17 +13,19 @@ export class ProfileService {
   private profiles = [
     {
       id: '1',
-      username: 'facundo497',
+      username: '',
       address: 'Av Maza',
       phone: 2610000000,
+      description: '',
       userId: '383bfd34-d368-4981-90dc-8481e45e91da',
       imageUrl: ''
     },
     {
       id: '2',
-      username: 'fabito',
+      username: '',
       address: 'Calle Avellaneda',
       phone: 2610000001,
+      description: '',
       userId: '54f47a6a-5b36-4738-99d4-b34723c9e2dc',
       imageUrl: ''
     }
@@ -33,12 +39,13 @@ export class ProfileService {
     return profileFound;
   }
 
-  async createProfile(profileId: string, userId: string) {
+  async createProfile(profileId: string, userId: string, username: string) {
     const newProfile = {
       id: profileId,
-      username: null,
+      username: username,
       address: null,
       phone: null,
+      description: null,
       userId,
       imageUrl: null,
     }
@@ -53,17 +60,17 @@ export class ProfileService {
         profileFound.imageUrl = image?.path;
         Object.assign(profileFound, changes);
       }
-
     })
-    profileFound.imageUrl = image?.path;
-    // const updatedProfile = Object.assign(profileFound, changes);
-    const result = await this.cloudinaryService.uploadFile(image, 'profile2');
-    const imageUrl = {
-      public_id: result.public_id,
-      secure_url: result.secure_url
-    }
-    return imageUrl;
 
-    // return updatedProfile;
+    if (process.env.NODE_ENV === ENVIRONMENTS.PRODUCTION) {
+      const result = await this.cloudinaryService.uploadFile(image, 'profile2');
+      profileFound.imageUrl = result.secure_url;
+      const updatedProfile = Object.assign(profileFound, changes);
+      return updatedProfile;
+    } else if (process.env.NODE_ENV === ENVIRONMENTS.DEVELOPMENT) {
+      profileFound.imageUrl = image?.path;
+      const updatedProfile = Object.assign(profileFound, changes);
+      return updatedProfile;
+    }
   }
 }

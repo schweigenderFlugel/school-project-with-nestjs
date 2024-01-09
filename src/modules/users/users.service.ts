@@ -71,7 +71,7 @@ export class UsersService {
       createdAt: new Date(),
       updatedAt: new Date(),
     }
-    await this.profileService.createProfile(profileId, userId);
+    await this.profileService.createProfile(profileId, userId, data.username);
     this.users.push(newUser);
     return { message: 'new user created'}
   }

@@ -5,7 +5,7 @@ import { Request, Express } from 'express';
 import { JwtGuard } from '../../common/guards/jwt.guard';
 import { ProfileService } from './profile.service';
 import { UpdateProfileDto } from './profile.dto';
-import { uploadFileConfig } from './utils/file-upload.config';
+import { uploadFileConfig } from '../../file-upload.config';
 
 @UseGuards(JwtGuard)
 @ApiBearerAuth()
@@ -20,7 +20,7 @@ export class ProfileController {
   }
   
   @Put()
-  @UseInterceptors(FileInterceptor('image', uploadFileConfig()))
+  @UseInterceptors(FileInterceptor('image', uploadFileConfig('profile')))
   async updateProfile(
     @Req() req: Request,
     @Body() changes: UpdateProfileDto, 

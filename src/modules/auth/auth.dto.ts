@@ -12,6 +12,13 @@ export class SignUpDto {
   @IsString()
   @MinLength(8)
   @MaxLength(20)
+  username: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(8)
+  @MaxLength(20)
   password: string;
 
   @ApiProperty()

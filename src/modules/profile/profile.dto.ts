@@ -16,4 +16,14 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsNumber()
   phone: number;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  description: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  imageUrl: string;
 }

@@ -8,7 +8,7 @@ export class Profile {
 
   @Column()
   username: string;
-
+  
   @Column()
   address: string;
 
@@ -17,6 +17,9 @@ export class Profile {
 
   @Column()
   imageUrl: string;
+
+  @Column()
+  description: string;
 
   @OneToOne(() => Users, (users) => users.id)
   @JoinColumn({ name: 'user_id' })
