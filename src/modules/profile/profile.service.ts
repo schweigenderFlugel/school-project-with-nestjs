@@ -55,19 +55,19 @@ export class ProfileService {
   async updateProfile(user: any, changes: UpdateProfileDto, image: Express.Multer.File) {
     const profileFound = this.profiles.find((profile) => profile.userId === user.id);
     if (!profileFound) throw new NotFoundException('profile not found');
-    fs.unlink(`${profileFound.imageUrl}`, (err) => {
-      if (err) {
-        profileFound.imageUrl = image?.path;
-        Object.assign(profileFound, changes);
-      }
-    })
-
+    
     if (process.env.NODE_ENV === ENVIRONMENTS.PRODUCTION) {
-      const result = await this.cloudinaryService.uploadFile(image, 'profile2');
+      const result = await this.cloudinaryService.uploadFile(image, 'profile');
       profileFound.imageUrl = result.secure_url;
       const updatedProfile = Object.assign(profileFound, changes);
       return updatedProfile;
     } else if (process.env.NODE_ENV === ENVIRONMENTS.DEVELOPMENT) {
+      fs.unlink(`${profileFound.imageUrl}`, (err) => {
+        if (err) {
+          profileFound.imageUrl = image?.path;
+          Object.assign(profileFound, changes);
+        }
+      })
       profileFound.imageUrl = image?.path;
       const updatedProfile = Object.assign(profileFound, changes);
       return updatedProfile;

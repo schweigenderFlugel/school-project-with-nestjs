@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { UsersModule } from './modules/users/users.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule} from '@nestjs/config';
 
+import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ProfileModule } from './modules/profile/profile.module';
-import config from './config';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
+import config from './config';
 
 @Module({
   imports: [

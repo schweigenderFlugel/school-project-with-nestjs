@@ -20,7 +20,7 @@ export class ProfileController {
   }
   
   @Put()
-  @UseInterceptors(FileInterceptor('image', uploadFileConfig('profile')))
+  @UseInterceptors(FileInterceptor('image', uploadFileConfig('profile', ['image/jpeg', 'image/png'])))
   async updateProfile(
     @Req() req: Request,
     @Body() changes: UpdateProfileDto, 

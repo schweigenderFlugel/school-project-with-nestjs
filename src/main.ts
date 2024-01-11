@@ -5,6 +5,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { RequestInterceptor } from './common/interceptors/request.interceptor';
 import * as cookieParser from 'cookie-parser';
 
+declare const module: any;
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe({
@@ -17,6 +19,9 @@ async function bootstrap() {
     credentials: true,
   })
 
+  app.use(cookieParser());
+  app.useGlobalInterceptors(new RequestInterceptor());
+
   const config = new DocumentBuilder()
     .addBearerAuth()
     .addCookieAuth('refresh_token')
@@ -27,10 +32,12 @@ async function bootstrap() {
     .build()
   const document = SwaggerModule.createDocument(app, config)
   SwaggerModule.setup('docs', app, document);
-  
 
-  app.use(cookieParser());
-  app.useGlobalInterceptors(new RequestInterceptor());
   await app.listen(3000);
+
+  if (module.hot) {
+    module.hot.accept();
+    module.hot.dispose(() => app.close());
+  }
 }
 bootstrap();
