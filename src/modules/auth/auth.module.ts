@@ -7,10 +7,12 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../../modules/users/users.module';
 import { RefreshJwtStrategy } from './strategies/refresh-jwt.strategy';
+import { ProfileModule } from '../profile/profile.module';
 
 @Module({ 
   imports: [
     UsersModule,
+    ProfileModule,
     PassportModule,
     JwtModule.register({})
   ],

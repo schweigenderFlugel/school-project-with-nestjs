@@ -5,7 +5,7 @@ export interface IUsersRepository {
   getAll(): Promise<Users[]>;
   findOne(id: number): Promise<Users | null>;
   findByEmail(email: string): Promise<Users | null>
-  createUser(newUser: ICreateUser): Promise<void>;
+  create(newUser: ICreateUser): Promise<Users>;
   saveRefreshToken(session: Users): Promise<void>;
   removeRefreshToken(session: Users): Promise<void>;
 }

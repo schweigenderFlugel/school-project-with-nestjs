@@ -5,12 +5,12 @@ import { ProfileService } from './profile.service';
 import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 import { Profile } from './profile.entity';
 import { ProfileRepository } from './profile.repository';
-import { UsersModule } from '../users/users.module';
 
 
 @Module({
-    imports: [UsersModule, CloudinaryModule, TypeOrmModule.forFeature([Profile])],
+    imports: [CloudinaryModule, TypeOrmModule.forFeature([Profile])],
     controllers: [ProfileController],
     providers: [ProfileService, ProfileRepository],
+    exports: [ProfileService]
 })
 export class ProfileModule {}

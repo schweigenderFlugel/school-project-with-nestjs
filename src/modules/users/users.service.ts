@@ -62,8 +62,7 @@ export class UsersService {
     if (userFound) {
       throw new ConflictException('the email already exists')
     }
-    await this.usersRepository.createUser(data);
-    return { message: 'new user created' }
+    return await this.usersRepository.create(data);
   }
 
   async updateUser(id: string, changes: any) {
@@ -75,24 +74,11 @@ export class UsersService {
     return updatedUser;
   }
 
-  async saveRefreshToken(id: number, refreshToken: string) {
+  async saveRefreshToken(id: number, jwtCookie: string, refreshToken: string) {
     try {
       const userFound = await this.usersRepository.findOne(id);
-      const newRefreshTokenArray = userFound.refreshToken.filter(rt => rt !== refreshToken);
+      const newRefreshTokenArray = userFound.refreshToken.filter(rt => rt !== jwtCookie);
       userFound.refreshToken = [...newRefreshTokenArray, refreshToken]
-      console.log(newRefreshTokenArray)
-      const session = new Users(userFound.refreshToken, id);
-      await this.usersRepository.saveRefreshToken(session)
-    } catch (error) {
-      throw new InternalServerErrorException(error)
-    }
-  }
-
-  async updateRefreshToken(id: number, refreshToken: string, newRefreshToken: string) {
-    try {
-      const userFound = await this.usersRepository.findOne(id);
-      const newRefreshTokenArray = userFound.refreshToken.filter(rt => rt !== refreshToken);
-      userFound.refreshToken = [...newRefreshTokenArray, newRefreshToken]
       console.log(newRefreshTokenArray)
       const session = new Users(userFound.refreshToken, id);
       await this.usersRepository.saveRefreshToken(session)

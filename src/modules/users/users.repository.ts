@@ -27,9 +27,9 @@ export class UsersRepository implements IUsersRepository {
     })
   }
 
-  async createUser(newUser: ICreateUser): Promise<void> {
+  async create(newUser: ICreateUser): Promise<Users> {
     const createUser = this.repository.create(newUser);
-    await this.repository.save(createUser);
+    return await this.repository.save(createUser);
   }
 
   async saveRefreshToken(session: Users): Promise<void> {

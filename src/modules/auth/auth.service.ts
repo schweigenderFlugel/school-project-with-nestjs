@@ -10,7 +10,10 @@ import { JwtService, TokenExpiredError, JsonWebTokenError } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
 import { Request, Response } from 'express';
 import * as bcrypt from 'bcrypt';
+
 import { UsersService } from '../users/users.service';
+import { ProfileService } from '../profile/profile.service';
+
 import { SignUpDto } from './auth.dto';
 import config from '../../config';
 
@@ -18,6 +21,7 @@ import config from '../../config';
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
+    private readonly profileService: ProfileService,
     private readonly jwtService: JwtService,
     @Inject(config.KEY) private readonly configService: ConfigType<typeof config>,
   ) {}
@@ -43,7 +47,9 @@ export class AuthService {
     if (data.password === data.confirmPassword) {
       const hashedPassword = await bcrypt.hash(data.password, 10);
       data.password = hashedPassword;
-      return await this.usersService.createUser(data);
+      const newUser = await this.usersService.createUser(data);
+      await this.profileService.createProfile(newUser.id, data.username)
+      return { message: "new user created"}
     } else {
       throw new BadRequestException('the passwords should be equal')
     }
@@ -72,7 +78,7 @@ export class AuthService {
           secret: this.configService.jwtRefresh
         })
         await this.setCookie(res, refreshToken)
-        await this.usersService.saveRefreshToken(user.id, refreshToken);
+        await this.usersService.saveRefreshToken(user.id, jwtCookie, refreshToken);
         return { accessToken };
       } else {
         const verify = await this.jwtService.verify(jwtCookie, { secret: this.configService.jwtRefresh })
@@ -95,8 +101,8 @@ export class AuthService {
 
   async getNewToken(req: Request, res: Response): Promise<object> {
     try {
-      const refreshToken = req.cookies.refresh_token;
-      const decoded = await this.jwtService.decode(refreshToken);
+      const jwtCookie = req.cookies.refresh_token;
+      const decoded = await this.jwtService.decode(jwtCookie);
       const payload = { sub: decoded.sub, role: decoded.role }; 
       const accessToken = await this.jwtService.signAsync(payload, {
         expiresIn: '10m', 
@@ -108,7 +114,7 @@ export class AuthService {
       })
       await this.removeCookie(res);
       await this.setCookie(res, newRefreshToken);
-      await this.usersService.updateRefreshToken(decoded.sub, refreshToken, newRefreshToken);
+      await this.usersService.saveRefreshToken(decoded.sub, jwtCookie, newRefreshToken);
       return { accessToken }
     } catch (error) {
       if (error instanceof InternalServerErrorException) {

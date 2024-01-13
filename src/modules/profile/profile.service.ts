@@ -6,7 +6,7 @@ import { ENVIRONMENTS } from 'src/environments';
 import * as dotenv from 'dotenv';
 import { ProfileRepository } from './profile.repository';
 import { IProfileRepository } from './interfaces/profile.repository.interface';
-import { UsersService } from '../users/users.service';
+import { Profile } from './profile.entity';
 
 dotenv.config()
 
@@ -15,7 +15,6 @@ export class ProfileService {
   constructor(
     @Inject(ProfileRepository) private readonly profileRepository: IProfileRepository,
     private readonly cloudinaryService: CloudinaryService,
-    private readonly usersService: UsersService,
   ) {}
 
   private profiles = [
@@ -40,27 +39,16 @@ export class ProfileService {
   ]
     
   async getProfile(user: any) {
-    const profileFound = this.profiles.find((profile) => profile.userId === user.id);
+    const profileFound = this.profileRepository.findOne(user);
     if (!profileFound) {
       throw new NotFoundException('profile not found');
     }
     return profileFound;
   }
 
-  async createProfile(user: any, data: any, image: Express.Multer.File) {
-    const userFound = await this.usersService.getUserById(user.id)
-    if (!userFound) throw new NotFoundException('user not found')
-
-    if (process.env.NODE_ENV === ENVIRONMENTS.PRODUCTION) {
-      const result = await this.cloudinaryService.uploadFile(image, 'profile');
-      data.imageUrl = result.secure_url;
-      await this.profileRepository.save(user.id, data)
-      return data;
-    } else if (process.env.NODE_ENV === ENVIRONMENTS.DEVELOPMENT) {
-      data.imageUrl = image?.path;
-      await this.profileRepository.save(userFound.id, data)
-      return data;
-    }
+  async createProfile(userId: any, username: any) {
+    const newProfile = new Profile(userId, username)
+    await this.profileRepository.create(newProfile)
   }
 
   async updateProfile(user: any, changes: UpdateProfileDto, image: Express.Multer.File) {

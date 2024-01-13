@@ -3,22 +3,27 @@ import { Users } from '../users/users.entity';
 
 @Entity({ name: 'profile' })
 export class Profile {
+  constructor(userId: any, username: string) {
+    this.user = userId,
+    this.username = username
+  }
+
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ unique: true })
   username: string;
   
-  @Column()
+  @Column({ type: 'varchar' })
   address: string;
 
-  @Column()
+  @Column({ type: 'bigint' })
   phone: number;
 
-  @Column()
+  @Column({ type: 'text'})
   imageUrl: string;
 
-  @Column()
+  @Column({ type: 'text'})
   description: string;
 
   @OneToOne(() => Users, (users) => users.id)
