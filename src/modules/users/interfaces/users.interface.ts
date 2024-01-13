@@ -4,10 +4,10 @@ export interface ICreateUser {
   id: number,
   email: string,
   password: string,
-  refreshToken: string[]
+  refreshToken: string[],
   recoveryToken: string[],
   role: Role,
-  profile: number,
+  profileId: number,
   createdAt: Date,
   updatedAt: Date
 }
@@ -19,7 +19,7 @@ export interface IUpdateUser {
   refreshToken?: string[]
   recoveryToken?: string[],
   role?: Role,
-  profile?: number,
+  profileId?: number,
   createdAt?: Date,
   updatedAt?: Date
 }

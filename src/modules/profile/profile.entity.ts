@@ -1,12 +1,12 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn } from 'typeorm';
 import { Users } from '../users/users.entity';
 
-@Entity()
+@Entity({ name: 'profile' })
 export class Profile {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true })
   username: string;
   
   @Column()
@@ -23,5 +23,5 @@ export class Profile {
 
   @OneToOne(() => Users, (users) => users.id)
   @JoinColumn({ name: 'user_id' })
-  userId: Users;
+  user: Users;
 }

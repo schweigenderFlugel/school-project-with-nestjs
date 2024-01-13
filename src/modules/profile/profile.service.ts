@@ -1,15 +1,23 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import * as fs from 'fs'
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { UpdateProfileDto } from './profile.dto';
 import { ENVIRONMENTS } from 'src/environments';
 import * as dotenv from 'dotenv';
+import { ProfileRepository } from './profile.repository';
+import { IProfileRepository } from './interfaces/profile.repository.interface';
+import { UsersService } from '../users/users.service';
 
 dotenv.config()
 
 @Injectable()
 export class ProfileService {
-  constructor(private cloudinaryService: CloudinaryService) {}
+  constructor(
+    @Inject(ProfileRepository) private readonly profileRepository: IProfileRepository,
+    private readonly cloudinaryService: CloudinaryService,
+    private readonly usersService: UsersService,
+  ) {}
+
   private profiles = [
     {
       id: '1',
@@ -39,17 +47,20 @@ export class ProfileService {
     return profileFound;
   }
 
-  async createProfile(profileId: string, userId: string, username: string) {
-    const newProfile = {
-      id: profileId,
-      username: username,
-      address: null,
-      phone: null,
-      description: null,
-      userId,
-      imageUrl: null,
+  async createProfile(user: any, data: any, image: Express.Multer.File) {
+    const userFound = await this.usersService.getUserById(user.id)
+    if (!userFound) throw new NotFoundException('user not found')
+
+    if (process.env.NODE_ENV === ENVIRONMENTS.PRODUCTION) {
+      const result = await this.cloudinaryService.uploadFile(image, 'profile');
+      data.imageUrl = result.secure_url;
+      await this.profileRepository.save(user.id, data)
+      return data;
+    } else if (process.env.NODE_ENV === ENVIRONMENTS.DEVELOPMENT) {
+      data.imageUrl = image?.path;
+      await this.profileRepository.save(userFound.id, data)
+      return data;
     }
-    this.profiles.push(newProfile)
   }
 
   async updateProfile(user: any, changes: UpdateProfileDto, image: Express.Multer.File) {

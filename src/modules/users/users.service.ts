@@ -1,11 +1,14 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
-import { v4 } from 'uuid';
+import { Injectable, Inject, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { Role } from '../../common/models/roles.model'; 
-import { ProfileService } from '../profile/profile.service';
+import { UsersRepository } from './users.repository';
+import { IUsersRepository } from './interfaces/users.repository.interface';
+import { Users } from './users.entity';
 
 @Injectable()
 export class UsersService {
-  constructor(private profileService: ProfileService) {}
+  constructor(
+    @Inject(UsersRepository) private readonly usersRepository: IUsersRepository
+  ) {}
 
   private users = [
     {
@@ -36,8 +39,8 @@ export class UsersService {
     return this.users;
   }
 
-  async getUserById(id: string) {
-    const userFound = this.users.find(user => user.id === id);
+  async getUserById(id: number) {
+    const userFound = await this.usersRepository.findOne(id);
     if (!userFound) {
       throw new NotFoundException('user not found');
     }
@@ -47,33 +50,20 @@ export class UsersService {
   }
 
   async getUserByEmail(email: string) {
-    const userFound = this.users.find(user => user.email === email)
+    const userFound = await this.usersRepository.findByEmail(email);
     if (!userFound) {
-      throw new NotFoundException('user not found')
+      throw new NotFoundException('user not found!')
     }
     return userFound;
   }
 
   async createUser(data: any) {
-    const emailExists = this.users.some((user) => user.email === data.email);
-    if (emailExists) {
-      throw new ConflictException(`the email '${data.email}' already exists`)
+    const userFound = await this.usersRepository.findByEmail(data.email);
+    if (userFound) {
+      throw new ConflictException('the email already exists')
     }
-    const profileId = v4();
-    const userId = v4()
-    const newUser = {
-      id: userId,
-      ...data,
-      role: Role.NORMAL,
-      refreshToken: [],
-      recoveryToken: [],
-      profileId: profileId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-    await this.profileService.createProfile(profileId, userId, data.username);
-    this.users.push(newUser);
-    return { message: 'new user created'}
+    await this.usersRepository.createUser(data);
+    return { message: 'new user created' }
   }
 
   async updateUser(id: string, changes: any) {
@@ -85,24 +75,35 @@ export class UsersService {
     return updatedUser;
   }
 
-  async saveRefreshToken(id: string, refreshToken: string) {
-    const userFound = this.users.find(user => user.id === id);
-    if (!userFound) {
-      throw new NotFoundException('user not found')
+  async saveRefreshToken(id: number, refreshToken: string) {
+    try {
+      const userFound = await this.usersRepository.findOne(id);
+      const newRefreshTokenArray = userFound.refreshToken.filter(rt => rt !== refreshToken);
+      userFound.refreshToken = [...newRefreshTokenArray, refreshToken]
+      console.log(newRefreshTokenArray)
+      const session = new Users(userFound.refreshToken, id);
+      await this.usersRepository.saveRefreshToken(session)
+    } catch (error) {
+      throw new InternalServerErrorException(error)
     }
-    const newRefreshTokenArray = userFound.refreshToken.filter((rt) => rt ==! refreshToken);
-    userFound.refreshToken = [...newRefreshTokenArray, refreshToken]
-    Object.assign(userFound.refreshToken);
   }
 
-  async removeRefreshToken(id: string, refreshToken: string) {
-    const userFound = this.users.find(user => user.id === id);
-    if (!userFound) {
-      throw new NotFoundException('user not found')
+  async updateRefreshToken(id: number, refreshToken: string, newRefreshToken: string) {
+    try {
+      const userFound = await this.usersRepository.findOne(id);
+      const newRefreshTokenArray = userFound.refreshToken.filter(rt => rt !== refreshToken);
+      userFound.refreshToken = [...newRefreshTokenArray, newRefreshToken]
+      console.log(newRefreshTokenArray)
+      const session = new Users(userFound.refreshToken, id);
+      await this.usersRepository.saveRefreshToken(session)
+    } catch (error) {
+      throw new InternalServerErrorException(error)
     }
-    const newRefreshTokenArray = userFound.refreshToken.filter((rt) => rt ==! refreshToken);
-    userFound.refreshToken = [...newRefreshTokenArray];
-    Object.assign(userFound.refreshToken);
+  }
+
+  async removeRefreshToken(id: number) {
+    const session = new Users([], id)
+    await this.usersRepository.removeRefreshToken(session)
   }
 
   async deleteUser(id: string) {

@@ -64,11 +64,11 @@ export class AuthService {
       if (!jwtCookie) {
         const payload = { sub: user.id, role: user.role};
         const accessToken = await this.jwtService.signAsync(payload, { 
-          expiresIn: '10m',
+          expiresIn: '10s',
           secret: this.configService.jwtSecret 
         })
         const refreshToken = await this.jwtService.signAsync(payload, { 
-          expiresIn: '1d', 
+          expiresIn: '15s', 
           secret: this.configService.jwtRefresh
         })
         await this.setCookie(res, refreshToken)
@@ -95,23 +95,23 @@ export class AuthService {
 
   async getNewToken(req: Request, res: Response): Promise<object> {
     try {
-      const jwtCookie = req.cookies.refresh_token;
-      const decoded = await this.jwtService.decode(jwtCookie);
+      const refreshToken = req.cookies.refresh_token;
+      const decoded = await this.jwtService.decode(refreshToken);
       const payload = { sub: decoded.sub, role: decoded.role }; 
       const accessToken = await this.jwtService.signAsync(payload, {
         expiresIn: '10m', 
         secret: this.configService.jwtSecret
       })
-      const refreshToken = await this.jwtService.signAsync(payload, {
+      const newRefreshToken = await this.jwtService.signAsync(payload, {
         expiresIn: '1d', 
         secret: this.configService.jwtRefresh 
       })
       await this.removeCookie(res);
-      await this.setCookie(res, refreshToken);
-      await this.usersService.saveRefreshToken(decoded.sub, refreshToken);
+      await this.setCookie(res, newRefreshToken);
+      await this.usersService.updateRefreshToken(decoded.sub, refreshToken, newRefreshToken);
       return { accessToken }
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
+      if (error instanceof InternalServerErrorException) {
         console.error(error)
       }
     }
@@ -143,7 +143,7 @@ export class AuthService {
     const decoded = await this.jwtService.decode(refreshToken);
     const userId = decoded.sub;
     await this.removeCookie(res)
-    await this.usersService.removeRefreshToken(userId, refreshToken);
+    await this.usersService.removeRefreshToken(userId);
     return { message: 'logged out successfully'}
   }
 }

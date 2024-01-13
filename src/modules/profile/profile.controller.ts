@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Req, Body, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Put, Req, Body, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { Request, Express } from 'express';
@@ -17,6 +17,15 @@ export class ProfileController {
   @Get()
   async getProfile(@Req() req: Request) {
     return this.profileService.getProfile(req.user);
+  }
+
+  @Post()
+  @UseInterceptors(FileInterceptor('image', uploadFileConfig('profile', ['image/jpeg', 'image/png'])))
+  async createProfile(
+    @Req() req: Request,
+    @Body() changes: UpdateProfileDto, 
+    @UploadedFile() image: Express.Multer.File ) {
+      return this.profileService.createProfile(+req.user, changes, image);
   }
   
   @Put()

@@ -6,7 +6,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/models/roles.model';
 import { RolesGuard } from '../../common/guards/roles.guard';
 
-@UseGuards(JwtGuard, RolesGuard)
+
 @ApiTags('Users')
 @ApiBearerAuth()
 @Controller('users')
@@ -14,18 +14,20 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @ApiOperation({ summary: 'list of users' })
+  @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Get()
   async getUsers() {
     return this.usersService.getUsers();
   }
 
-  @Get(':id')
-  async getUserById(@Param('id') id: string) {
-    return this.usersService.getUserById(id);
+  @Get('/:email')
+  async getUserByEmail(@Param('email') email: string) {
+    return this.usersService.getUserByEmail(email)
   }
 
   @ApiOperation({ summary: 'update the user information' })
+  @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Put(':id')
   async updateUser(@Param('id') id: string, @Body() changes: any) {
