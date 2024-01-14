@@ -8,6 +8,7 @@ import { ProfileModule } from './modules/profile/profile.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import config from './config';
 import { dataSourceOption } from './ormconfig';
+import { NodemailerModule } from './modules/nodemailer/nodemailer.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { dataSourceOption } from './ormconfig';
     AuthModule,
     ProfileModule,
     CloudinaryModule,
+    NodemailerModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [config]

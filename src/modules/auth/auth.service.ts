@@ -16,12 +16,14 @@ import { ProfileService } from '../profile/profile.service';
 
 import { SignUpDto } from './auth.dto';
 import config from '../../config';
+import { NodemailerService } from '../nodemailer/nodemailer.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly profileService: ProfileService,
+    private readonly nodemailerService: NodemailerService,
     private readonly jwtService: JwtService,
     @Inject(config.KEY) private readonly configService: ConfigType<typeof config>,
   ) {}
@@ -44,15 +46,21 @@ export class AuthService {
   }
 
   async signUp(data: SignUpDto): Promise<object> {
-    if (data.password === data.confirmPassword) {
-      const hashedPassword = await bcrypt.hash(data.password, 10);
-      data.password = hashedPassword;
-      const newUser = await this.usersService.createUser(data);
-      await this.profileService.createProfile(newUser.id, data.username)
-      return { message: "new user created"}
-    } else {
-      throw new BadRequestException('the passwords should be equal')
+    try {
+      if (data.password === data.confirmPassword) {
+        const hashedPassword = await bcrypt.hash(data.password, 10);
+        data.password = hashedPassword;
+        const newUser = await this.usersService.createUser(data);
+        await this.profileService.createProfile(newUser.id, data.username);
+        await this.nodemailerService.sendMail(data.email);
+        return { message: "new user created"}
+      } else {
+        throw new BadRequestException('the passwords should be equal')
+      }
+    } catch (error) {
+      throw new InternalServerErrorException(error)
     }
+    
   }
 
   async validateUser(email: string, password: string): Promise<object> {
