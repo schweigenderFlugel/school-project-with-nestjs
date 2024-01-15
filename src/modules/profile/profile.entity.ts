@@ -3,16 +3,15 @@ import { Users } from '../users/users.entity';
 
 @Entity({ name: 'profile' })
 export class Profile {
-  constructor(userId: any, username: string) {
-    this.user = userId,
-    this.username = username
+  constructor(userId: any) {
+    this.user = userId
   }
 
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
-  username: string;
+  @Column({ type: 'varchar' })
+  fullName: string;
   
   @Column({ type: 'varchar' })
   address: string;

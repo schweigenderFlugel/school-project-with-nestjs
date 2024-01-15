@@ -12,9 +12,9 @@ import { NodemailerService } from './nodemailer.service';
       useFactory: (configService: ConfigType<typeof config>) => ({
         transport: {
           service: 'gmail',
-          host: 'smtp.gmail.net',
+          host: configService.nodemailerHost,
           secure: true,
-          port: 587,
+          port: configService.nodemailerPort,
           tls: {
             rejectUnauthorized: false
           },

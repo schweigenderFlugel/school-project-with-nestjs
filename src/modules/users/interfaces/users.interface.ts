@@ -3,6 +3,7 @@ import { Role } from "src/common/models/roles.model";
 export interface ICreateUser {
   id: number,
   email: string,
+  username: string,
   password: string,
   refreshToken: string[],
   recoveryToken: string[],
@@ -14,6 +15,7 @@ export interface ICreateUser {
 export interface IUpdateUser {
   id: number,
   email?: string,
+  username?: string,
   password?: string,
   refreshToken?: string[]
   recoveryToken?: string[],

@@ -11,8 +11,8 @@ export class ProfileRepository implements IProfileRepository {
     this.repository = this.dataSource.getRepository(Profile)
   }
 
-  async findOne(userId: any): Promise<Profile> {
-    return this.repository.findOne({
+  async findByUserId(userId: any): Promise<Profile> {
+    return await this.repository.findOne({
       where: { user: userId },
       relations: ['user']
     })

@@ -16,7 +16,7 @@ export class ProfileController {
   
   @Get()
   async getProfile(@Req() req: Request) {
-    return this.profileService.getProfile(req.user);
+    return await this.profileService.getProfile(req.user);
   }
   
   @Put()
@@ -25,6 +25,6 @@ export class ProfileController {
     @Req() req: Request,
     @Body() changes: UpdateProfileDto, 
     @UploadedFile() image: Express.Multer.File ) {
-      return this.profileService.updateProfile(req.user, changes, image);
+      return await this.profileService.updateProfile(req.user, changes, image);
   }
 }

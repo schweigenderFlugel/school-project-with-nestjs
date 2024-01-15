@@ -3,11 +3,13 @@ import { Role } from '../../common/models/roles.model';
 import { UsersRepository } from './users.repository';
 import { IUsersRepository } from './interfaces/users.repository.interface';
 import { Users } from './users.entity';
+import { ProfileService } from '../profile/profile.service';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @Inject(UsersRepository) private readonly usersRepository: IUsersRepository
+    @Inject(UsersRepository) private readonly usersRepository: IUsersRepository,
+    private readonly profileService: ProfileService,
   ) {}
 
   private users = [
@@ -59,10 +61,9 @@ export class UsersService {
 
   async createUser(data: any) {
     const userFound = await this.usersRepository.findByEmail(data.email);
-    if (userFound) {
-      throw new ConflictException('the email already exists')
-    }
-    return await this.usersRepository.create(data);
+    if (userFound) throw new ConflictException('the email already exists')
+    const newUser = await this.usersRepository.create(data);
+    await this.profileService.createProfile(newUser.id);
   }
 
   async updateUser(id: string, changes: any) {

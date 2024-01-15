@@ -12,20 +12,19 @@ import { Request, Response } from 'express';
 import * as bcrypt from 'bcrypt';
 
 import { UsersService } from '../users/users.service';
-import { ProfileService } from '../profile/profile.service';
+import { NodemailerService } from '../nodemailer/nodemailer.service';
 
 import { SignUpDto } from './auth.dto';
 import config from '../../config';
-import { NodemailerService } from '../nodemailer/nodemailer.service';
+
 
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(config.KEY) private readonly configService: ConfigType<typeof config>,
     private readonly usersService: UsersService,
-    private readonly profileService: ProfileService,
     private readonly nodemailerService: NodemailerService,
     private readonly jwtService: JwtService,
-    @Inject(config.KEY) private readonly configService: ConfigType<typeof config>,
   ) {}
 
   private async setCookie(res: Response, refreshToken: string): Promise<void> {
@@ -50,8 +49,7 @@ export class AuthService {
       if (data.password === data.confirmPassword) {
         const hashedPassword = await bcrypt.hash(data.password, 10);
         data.password = hashedPassword;
-        const newUser = await this.usersService.createUser(data);
-        await this.profileService.createProfile(newUser.id, data.username);
+        await this.usersService.createUser(data);
         await this.nodemailerService.sendMail(data.email);
         return { message: "new user created"}
       } else {

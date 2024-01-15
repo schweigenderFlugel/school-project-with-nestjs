@@ -1,3 +1,32 @@
-<p>Send Email with Nest JS</p>
-<p>Bienvenido {{ email }}</p>
-<p>Tu código es</p>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        main {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #confirm {
+            color: white;
+            background-color: rgb(0, 105, 0);
+            border-radius: 15px;
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 14px;
+            padding: 10px;
+        }
+        #confirm:hover {
+            background-color: green;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Bienvenido {{ email }}</h1>
+        <p>Tu código es {{ code }}</p>
+        <a type="button" id="confirm" href={{ link }}>Ingresar</a>
+    </main>
+</body>
+</html>
