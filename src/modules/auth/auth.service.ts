@@ -30,7 +30,7 @@ export class AuthService {
   private async setCookie(res: Response, refreshToken: string): Promise<void> {
     res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
-      secure: false,
+      secure: true,
       sameSite: 'none',
       expires: new Date(Date.now() + 24 * 60* 60 * 1000),
     })
@@ -39,7 +39,7 @@ export class AuthService {
   private async removeCookie(res: Response): Promise<void> {
     res.clearCookie('refresh_token', {
       httpOnly: true,
-      secure: false,
+      secure: true,
       sameSite: 'none' 
     })
   }
@@ -56,14 +56,14 @@ export class AuthService {
         throw new BadRequestException('the passwords should be equal')
       }
     } catch (error) {
-      throw new InternalServerErrorException(error)
+      if (error instanceof ConflictException) throw new ConflictException(error.message);
+      else if (error instanceof BadRequestException) throw new BadRequestException(error.message);
     }
-    
   }
 
   async validateUser(email: string, password: string): Promise<object> {
     const userFound = await this.usersService.getUserByEmail(email);
-    const isMatch = await bcrypt.compare(password, userFound.password)
+    const isMatch = await bcrypt.compare(password, userFound.password);
     if (isMatch) {
       return userFound;
     }
@@ -74,21 +74,23 @@ export class AuthService {
     try {
       const jwtCookie = req.cookies.refresh_token;
       if (!jwtCookie) {
-        const payload = { sub: user.id, role: user.role};
+        const payload = { sub: user.id, role: user.role };
         const accessToken = await this.jwtService.signAsync(payload, { 
           expiresIn: '10s',
           secret: this.configService.jwtSecret 
-        })
+        });
         const refreshToken = await this.jwtService.signAsync(payload, { 
           expiresIn: '15s', 
           secret: this.configService.jwtRefresh
-        })
-        await this.setCookie(res, refreshToken)
+        });
+        await this.setCookie(res, refreshToken);
         await this.usersService.saveRefreshToken(user.id, jwtCookie, refreshToken);
         return { accessToken };
       } else {
-        const verify = await this.jwtService.verify(jwtCookie, { secret: this.configService.jwtRefresh })
-        if (verify) throw new ConflictException(`you've already logged in`)
+        const verify = await this.jwtService.verifyAsync(jwtCookie, {
+          secret: this.configService.jwtRefresh,
+        });
+        if (verify) throw new ConflictException(`you've already logged in`);
       }
     } catch (error) {
       if (error instanceof ConflictException) { 
@@ -123,9 +125,7 @@ export class AuthService {
       await this.usersService.saveRefreshToken(decoded.sub, jwtCookie, newRefreshToken);
       return { accessToken }
     } catch (error) {
-      if (error instanceof InternalServerErrorException) {
-        console.error(error)
-      }
+      throw new InternalServerErrorException(error);
     }
   }
 
@@ -151,11 +151,11 @@ export class AuthService {
     return password;
   }
 
-  async signOut(refreshToken: string, res: Response): Promise<object> {
-    const decoded = await this.jwtService.decode(refreshToken);
+  async signOut(jwtCookie: string, res: Response): Promise<object> {
+    const decoded = await this.jwtService.decode(jwtCookie);
     const userId = decoded.sub;
     await this.removeCookie(res)
-    await this.usersService.removeRefreshToken(userId);
+    await this.usersService.removeRefreshToken(userId, jwtCookie);
     return { message: 'logged out successfully'}
   }
 }

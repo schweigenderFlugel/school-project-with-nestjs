@@ -20,10 +20,10 @@ export class Profile {
   phone: number;
 
   @Column({ type: 'text'})
-  imageUrl: string;
+  description: string;
 
   @Column({ type: 'text'})
-  description: string;
+  imageUrl: string;
 
   @OneToOne(() => Users, (users) => users.id)
   @JoinColumn({ name: 'user_id' })

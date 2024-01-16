@@ -14,10 +14,9 @@ export class ProfileRepository implements IProfileRepository {
   async findByUserId(userId: any): Promise<Profile> {
     return await this.repository.findOne({
       where: { user: userId },
-      relations: ['user']
     })
   }
-
+  
   async create(newProfile: Profile): Promise<void> {
     await this.repository.save(newProfile)
   }

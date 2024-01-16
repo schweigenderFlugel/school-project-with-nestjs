@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, ConflictException } from '@nestjs/common';
 import { Role } from '../../common/models/roles.model'; 
 import { UsersRepository } from './users.repository';
 import { IUsersRepository } from './interfaces/users.repository.interface';
@@ -16,6 +16,7 @@ export class UsersService {
     {
       id: '383bfd34-d368-4981-90dc-8481e45e91da',
       email: 'admin@email.com',
+      username: 'admin',
       password: '$2b$10$JclD5ZmslCCbQApatOy3fOA3/GWnkgRb6T4EYMLxn44z8vtxEuQIu',
       refreshToken: [],
       recoveryToken: [],
@@ -27,6 +28,7 @@ export class UsersService {
     {
       id: "54f47a6a-5b36-4738-99d4-b34723c9e2dc",
       email: 'normal@email.com',
+      username: 'normal',
       password: '$2b$10$JclD5ZmslCCbQApatOy3fOA3/GWnkgRb6T4EYMLxn44z8vtxEuQIu',
       refreshToken: [],
       recoveryToken: [],
@@ -60,10 +62,12 @@ export class UsersService {
   }
 
   async createUser(data: any) {
-    const userFound = await this.usersRepository.findByEmail(data.email);
-    if (userFound) throw new ConflictException('the email already exists')
-    const newUser = await this.usersRepository.create(data);
-    await this.profileService.createProfile(newUser.id);
+    try {
+      const newUser = await this.usersRepository.create(data);
+      await this.profileService.createProfile(newUser.id);
+    } catch (error) {
+      throw new ConflictException(error);
+    }
   }
 
   async updateUser(id: string, changes: any) {
@@ -76,21 +80,19 @@ export class UsersService {
   }
 
   async saveRefreshToken(id: number, jwtCookie: string, refreshToken: string) {
-    try {
-      const userFound = await this.usersRepository.findOne(id);
-      const newRefreshTokenArray = userFound.refreshToken.filter(rt => rt !== jwtCookie);
-      userFound.refreshToken = [...newRefreshTokenArray, refreshToken]
-      console.log(newRefreshTokenArray)
-      const session = new Users(userFound.refreshToken, id);
-      await this.usersRepository.saveRefreshToken(session)
-    } catch (error) {
-      throw new InternalServerErrorException(error)
-    }
+    const userFound = await this.usersRepository.findOne(id);
+    const newRefreshTokenArray = userFound.refreshToken.filter(rt => rt !== jwtCookie);
+    userFound.refreshToken = [...newRefreshTokenArray, refreshToken];
+    const session = new Users(userFound.refreshToken, id);
+    await this.usersRepository.saveRefreshToken(session);
   }
 
-  async removeRefreshToken(id: number) {
-    const session = new Users([], id)
-    await this.usersRepository.removeRefreshToken(session)
+  async removeRefreshToken(id: number, jwtCookie: string) {
+    const userFound = await this.usersRepository.findOne(id);
+    const newRefreshTokenArray = userFound.refreshToken.filter(rt => rt !== jwtCookie);
+    userFound.refreshToken = [...newRefreshTokenArray];
+    const session = new Users(userFound.refreshToken, id);
+    await this.usersRepository.removeRefreshToken(session);
   }
 
   async deleteUser(id: string) {

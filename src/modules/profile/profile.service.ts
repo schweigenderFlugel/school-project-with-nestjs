@@ -20,7 +20,7 @@ export class ProfileService {
   private profiles = [
     {
       id: '1',
-      username: '',
+      fullName: 'Juan De Tales',
       address: 'Av Maza',
       phone: 2610000000,
       description: '',
@@ -29,7 +29,7 @@ export class ProfileService {
     },
     {
       id: '2',
-      username: '',
+      fullName: 'John Doe',
       address: 'Calle Avellaneda',
       phone: 2610000001,
       description: '',
@@ -50,19 +50,20 @@ export class ProfileService {
   }
 
   async updateProfile(user: any, changes: UpdateProfileDto, image: Express.Multer.File) {
-    const profileFound = this.profiles.find((profile) => profile.userId === user.id);
+    const profileFound = await this.profileRepository.findByUserId(user.id);
     if (!profileFound) throw new NotFoundException('profile not found');
     
     if (process.env.NODE_ENV === ENVIRONMENTS.PRODUCTION) {
       const result = await this.cloudinaryService.uploadFile(image, 'profile');
       profileFound.imageUrl = result.secure_url;
-      const updatedProfile = Object.assign(profileFound, changes);
+      const updatedProfile = await this.profileRepository.update(profileFound);
       return updatedProfile;
     } else if (process.env.NODE_ENV === ENVIRONMENTS.DEVELOPMENT) {
       fs.unlink(`${profileFound.imageUrl}`, (err) => {
         if (err) {
           profileFound.imageUrl = image?.path;
-          Object.assign(profileFound, changes);
+          const updatedProfile = this.profileRepository.update(profileFound);
+          return updatedProfile;
         }
       })
       profileFound.imageUrl = image?.path;
