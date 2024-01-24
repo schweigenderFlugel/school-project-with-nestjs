@@ -17,13 +17,31 @@ export class DiscordAuthController {
 
   @UseGuards(AuthGuard('discord'))
   @Get('discord/redirect')
-  async redirectWithDiscord(@Req() req: Request, @Res() res: Response) {
-    await this.authDiscordService.setDiscordRefreshTokenCookie(req, res);
+  async redirectWithDiscord(@Req() req: Request) {
+    return await this.authDiscordService.discordAuthRedirect(req);
   }
 
   @ApiOperation({ summary: 'get access and refresh token from discord' })
+  @Get('discord/token')
+  async getAuthData() {
+    return await this.authDiscordService.getDiscordToken();
+  }
+
+  @ApiOperation({ summary: 'get user data by the discord id'})
   @Get('discord/user')
-  async getAuthData(@Req() req: Request) {
-    return await this.authDiscordService.getDiscordAuthData(req);
+  async getUser() {
+    return await this.authDiscordService.getUser()
+  }
+
+  @ApiOperation({ summary: 'create a new user from the discord user data'})
+  @Get('discord/create')
+  async createUser() {
+    return await this.authDiscordService.createUser()
+  }
+
+  @ApiOperation({ summary: 'revoke the access token'})
+  @Get('discord/revoke')
+  async revokeAuth(@Res() res: Response) {
+    return await this.authDiscordService.revokeAuth(res)
   }
 }
