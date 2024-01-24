@@ -29,6 +29,9 @@ export class Users {
   @Column({ default: Role.NORMAL })
   role: string
 
+  @Column({ type: 'boolean', default: true })
+  isActive: boolean;
+
   @CreateDateColumn({ name: 'create_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 

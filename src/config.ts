@@ -14,5 +14,8 @@ export default registerAs('config', () => {
     nodemailerPort: +process.env.NODEMAILER_PORT,
     nodemailerUser: process.env.NODEMAILER_USER,
     nodemailerPass: process.env.NODEMAILER_PASS,
+
+    discordClientId: process.env.DISCORD_CLIENT_ID,
+    discordClientSecret: process.env.DISCORD_CLIENT_SECRET,
   }
 })

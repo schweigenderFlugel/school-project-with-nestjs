@@ -9,11 +9,14 @@ import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import config from './config';
 import { dataSourceOption } from './ormconfig';
 import { NodemailerModule } from './modules/nodemailer/nodemailer.module';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { DiscordAuthModule } from './modules/discord-auth/discord-auth.module';
 
 @Module({
   imports: [
     UsersModule, 
     AuthModule,
+    DiscordAuthModule,
     ProfileModule,
     CloudinaryModule,
     NodemailerModule,
@@ -28,5 +31,9 @@ import { NodemailerModule } from './modules/nodemailer/nodemailer.module';
       })
     })
   ],
+  providers: [{
+    provide: 'APP_FILTER',
+    useClass: HttpExceptionFilter,
+  }]
 })
 export class AppModule {}

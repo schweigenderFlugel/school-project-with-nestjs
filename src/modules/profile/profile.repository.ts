@@ -17,8 +17,8 @@ export class ProfileRepository implements IProfileRepository {
     })
   }
   
-  async create(newProfile: Profile): Promise<void> {
-    await this.repository.save(newProfile)
+  async create(newProfile: Profile): Promise<Profile> {
+    return await this.repository.save(newProfile)
   }
 
   async update(changes: IUpdateProfile): Promise<Profile> {

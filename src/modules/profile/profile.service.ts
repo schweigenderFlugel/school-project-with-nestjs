@@ -1,9 +1,10 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import * as fs from 'fs'
+import * as fs from 'node:fs'
+import * as dotenv from 'dotenv';
+
+import { ENVIRONMENTS } from '../../environments';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { UpdateProfileDto } from './profile.dto';
-import { ENVIRONMENTS } from 'src/environments';
-import * as dotenv from 'dotenv';
 import { ProfileRepository } from './profile.repository';
 import { IProfileRepository } from './interfaces/profile.repository.interface';
 import { Profile } from './profile.entity';
@@ -44,9 +45,9 @@ export class ProfileService {
     return profileFound;
   }
 
-  async createProfile(userId: any) {
+  async createProfile(userId: any): Promise<Profile> {
     const newProfile = new Profile(userId);
-    await this.profileRepository.create(newProfile);
+    return await this.profileRepository.create(newProfile);
   }
 
   async updateProfile(user: any, changes: UpdateProfileDto, image: Express.Multer.File) {

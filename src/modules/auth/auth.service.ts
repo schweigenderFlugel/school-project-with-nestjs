@@ -5,7 +5,7 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
-  InternalServerErrorException } from '@nestjs/common';
+  NotFoundException } from '@nestjs/common';
 import { JwtService, TokenExpiredError, JsonWebTokenError } from '@nestjs/jwt';
 import { ConfigType } from '@nestjs/config';
 import { Request, Response } from 'express';
@@ -13,7 +13,6 @@ import * as bcrypt from 'bcrypt';
 
 import { UsersService } from '../users/users.service';
 import { NodemailerService } from '../nodemailer/nodemailer.service';
-
 import { SignUpDto } from './auth.dto';
 import config from '../../config';
 
@@ -22,13 +21,13 @@ import config from '../../config';
 export class AuthService {
   constructor(
     @Inject(config.KEY) private readonly configService: ConfigType<typeof config>,
+    private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
     private readonly nodemailerService: NodemailerService,
-    private readonly jwtService: JwtService,
   ) {}
 
-  private async setCookie(res: Response, refreshToken: string): Promise<void> {
-    res.cookie('refresh_token', refreshToken, {
+  private async setCookie(name: string, res: Response, refreshToken: string): Promise<void> {
+    res.cookie(name, refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
@@ -62,12 +61,15 @@ export class AuthService {
   }
 
   async validateUser(email: string, password: string): Promise<object> {
-    const userFound = await this.usersService.getUserByEmail(email);
-    const isMatch = await bcrypt.compare(password, userFound.password);
-    if (isMatch) {
-      return userFound;
+    try {
+      const userFound = await this.usersService.getUserByEmail(email);
+      const isMatch = await bcrypt.compare(password, userFound.password);
+      if (userFound.isActive !== true) throw new ForbiddenException('not allowed to login')
+      if (isMatch) return userFound;
+      else return null;
+    } catch (error) {
+      if (error instanceof ForbiddenException) throw new ForbiddenException(error.message)
     }
-    return null;
   }
 
   async generateJwt(user: any, req: Request, res: Response): Promise<object> {
@@ -83,7 +85,7 @@ export class AuthService {
           expiresIn: '15s', 
           secret: this.configService.jwtRefresh
         });
-        await this.setCookie(res, refreshToken);
+        await this.setCookie('refresh_token', res, refreshToken);
         await this.usersService.saveRefreshToken(user.id, jwtCookie, refreshToken);
         return { accessToken };
       } else {
@@ -93,16 +95,16 @@ export class AuthService {
         if (verify) throw new ConflictException(`you've already logged in`);
       }
     } catch (error) {
+      const jwtCookie = req.cookies.refresh_token;
+      const decoded = await this.jwtService.decode(jwtCookie);
       if (error instanceof ConflictException) { 
         throw new ConflictException( error.message )
       } else if (error instanceof TokenExpiredError) {
-        await this.signOut(req.cookies.refresh_token, res);
+        await this.usersService.removeRefreshToken(decoded.sub, jwtCookie);
         throw new ForbiddenException( error.message );
       } else if (error instanceof JsonWebTokenError) {
-        await this.signOut(req.cookies.refresh_token, res);
+        await this.usersService.removeRefreshToken(decoded.sub, jwtCookie);
         throw new ForbiddenException( error.message );
-      } else {
-        throw new InternalServerErrorException(error);
       }
     }
   }
@@ -110,22 +112,38 @@ export class AuthService {
   async getNewToken(req: Request, res: Response): Promise<object> {
     try {
       const jwtCookie = req.cookies.refresh_token;
+      if (!jwtCookie) throw new NotFoundException('cookie not found!');
+      await this.jwtService.verifyAsync(jwtCookie, {
+        secret: this.configService.jwtRefresh,
+      })
       const decoded = await this.jwtService.decode(jwtCookie);
       const payload = { sub: decoded.sub, role: decoded.role }; 
       const accessToken = await this.jwtService.signAsync(payload, {
-        expiresIn: '10m', 
+        expiresIn: '10s', 
         secret: this.configService.jwtSecret
       })
       const newRefreshToken = await this.jwtService.signAsync(payload, {
-        expiresIn: '1d', 
+        expiresIn: '15s', 
         secret: this.configService.jwtRefresh 
       })
       await this.removeCookie(res);
-      await this.setCookie(res, newRefreshToken);
+      await this.setCookie('refresh_token', res, newRefreshToken);
       await this.usersService.saveRefreshToken(decoded.sub, jwtCookie, newRefreshToken);
       return { accessToken }
     } catch (error) {
-      throw new InternalServerErrorException(error);
+      const jwtCookie = req.cookies.refresh_token;
+      const decoded = await this.jwtService.decode(jwtCookie);
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException(error.message)
+      } else if (error instanceof TokenExpiredError) {
+        await this.usersService.removeRefreshToken(decoded.sub, jwtCookie);
+        await this.removeCookie(res);
+        throw new ForbiddenException( error.message );
+      } else if (error instanceof JsonWebTokenError) {
+        await this.usersService.removeRefreshToken(decoded.sub, jwtCookie);
+        await this.removeCookie(res);
+        throw new ForbiddenException( error.message );
+      }
     }
   }
 
@@ -152,10 +170,32 @@ export class AuthService {
   }
 
   async signOut(jwtCookie: string, res: Response): Promise<object> {
-    const decoded = await this.jwtService.decode(jwtCookie);
-    const userId = decoded.sub;
-    await this.removeCookie(res)
-    await this.usersService.removeRefreshToken(userId, jwtCookie);
-    return { message: 'logged out successfully'}
+    try {
+      if (!jwtCookie) throw new NotFoundException('cookie not found!')
+      await this.jwtService.verify(jwtCookie, {
+        secret: this.configService.jwtRefresh
+      });
+      const decoded = await this.jwtService.decode(jwtCookie);
+      const userId = decoded.sub;
+      await this.removeCookie(res)
+      await this.usersService.removeRefreshToken(userId, jwtCookie);
+      return { message: 'logged out successfully'}
+    } catch (error) {
+      const decoded = await this.jwtService.decode(jwtCookie);
+      const userId = decoded?.sub;
+      if (error instanceof NotFoundException) {
+        throw new NotFoundException(error.message)
+      }
+      else if (error instanceof TokenExpiredError) {
+        await this.usersService.removeRefreshToken(userId, jwtCookie);
+        await this.removeCookie(res)
+        throw new ForbiddenException(error.message)
+      }
+      else if (error instanceof JsonWebTokenError) {
+        await this.usersService.removeRefreshToken(userId, jwtCookie); 
+        await this.removeCookie(res)
+        throw new ForbiddenException(error.message) 
+      }
+    }
   }
 }

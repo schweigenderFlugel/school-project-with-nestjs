@@ -11,13 +11,14 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { Request, Response } from 'express';
+
 import { AuthService } from './auth.service';
 import { SignInDto, SignUpDto } from './auth.dto';
 
 @ApiTags('Auth')
 @Controller()
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
   @ApiOperation({ summary: 'to create a new user' })
   @Post('sign-up')
@@ -32,9 +33,8 @@ export class AuthController {
     return await this.authService.generateJwt(req.user, req, res);
   }
 
-
   @ApiOperation({ summary: 'to get a new access and a refresh token cookie' })
-  @UseGuards(AuthGuard('refresh-jwt'))
+  // @UseGuards(AuthGuard('refresh-jwt'))
   @Get('new-token')
   async getNewToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     return await this.authService.getNewToken(req, res);
@@ -51,7 +51,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'to logout and remove the refresh token cookie' })
-  @UseGuards(AuthGuard('refresh-jwt'))
+  // @UseGuards(AuthGuard('refresh-jwt'))
   @Get('sign-out')
   async signOut(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     return await this.authService.signOut(req.cookies.refresh_token, res);

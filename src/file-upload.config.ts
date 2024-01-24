@@ -1,6 +1,6 @@
 import { diskStorage, memoryStorage } from 'multer';
 import { v4 } from 'uuid';
-import { extname } from 'path';
+import { extname } from 'node:path';
 import * as dotenv from 'dotenv'
 import { ENVIRONMENTS } from './environments';
 
@@ -29,16 +29,19 @@ const developmentConfig = (localFolder: string, formats: string[]) => {
   }
 }
 
-const productionConfig = {
-  limits: { fileSize: 1024 * 1024 }, 
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
-      cb(null, true);
-    } else {
-      cb(null, false);
-    }
-  },
-  storage: memoryStorage()
+const productionConfig = (formats: string[]) => {
+  return {
+    limits: { fileSize: 1024 * 1024 }, 
+    fileFilter: (req, file, cb) => {
+      const isMatch = formats.some(format => format === file.mimetype)
+      if (isMatch) {
+        cb(null, true);
+      } else {
+        cb(null, false);
+      }
+    },
+    storage: memoryStorage()
+  }
 }
 
 export const uploadFileConfig = (localFolder: string, formats: string[]) => {
@@ -47,6 +50,6 @@ export const uploadFileConfig = (localFolder: string, formats: string[]) => {
   }
   
   if (process.env.NODE_ENV === ENVIRONMENTS.PRODUCTION) {
-    return productionConfig;
+    return productionConfig(formats);
   }
 }
