@@ -17,8 +17,8 @@ export class DiscordAuthController {
 
   @UseGuards(AuthGuard('discord'))
   @Get('discord/redirect')
-  async redirectWithDiscord(@Req() req: Request) {
-    return await this.authDiscordService.discordAuthRedirect(req);
+  async redirectWithDiscord(@Req() req: Request, @Res() res: Response) {
+    return await this.authDiscordService.discordAuthRedirect(req, res);
   }
 
   @ApiOperation({ summary: 'get access and refresh token from discord' })

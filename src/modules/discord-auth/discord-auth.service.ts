@@ -8,7 +8,6 @@ import { DiscordOAuth2CredentialsResponse, DiscordOAuth2UserDataResponse } from 
 import { DiscordAuth } from "./discord-auth.entity";
 import { DiscordAuthRepository } from "./discord-auth.repository";
 import { IDiscordAuthRepository } from "./interfaces/discord-auth.repository.interface";
-import { UsersService } from "../users/users.service";
 import config from "../../config";
 
 let accessToken: string;
@@ -22,10 +21,10 @@ export class DiscordAuthService {
     private readonly httpService: HttpService,
   ) {}
 
-  async discordAuthRedirect(req: any) {
+  async discordAuthRedirect(req: any, res: Response) {
     accessToken = req.user.accessToken;
     refreshToken = req.user.refreshToken;
-    return { message: 'authentication with discord successful!' };
+    res.redirect(this.configService.frontendUrl)
   }
 
   async getDiscordToken() {

@@ -1,3 +1,4 @@
+import { Role } from 'src/common/models/roles.model';
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'discord-auth' })
@@ -38,4 +39,10 @@ export class DiscordAuth {
 
   @Column({ name: 'refresh_token'})
   refreshToken: string;
+
+  @Column({ default: Role.NORMAL })
+  role: string;
+
+  @Column({ name: 'profile-id'})
+  profileId: string;
 }
