@@ -11,6 +11,7 @@ import { dataSourceOption } from './ormconfig';
 import { NodemailerModule } from './modules/nodemailer/nodemailer.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { DiscordAuthModule } from './modules/discord-auth/discord-auth.module';
+import { ArticlesModule } from './modules/articles/articles.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { DiscordAuthModule } from './modules/discord-auth/discord-auth.module';
     ProfileModule,
     CloudinaryModule,
     NodemailerModule,
+    ArticlesModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [config]
