@@ -3,11 +3,12 @@
     "id": 1,
     "title": "Cuerpo en el alba",
     "author": "John Doe",
-    "date": "01/01/2024",
+    "createdDate": "2024-01-25T19:40:17.646Z",
+    "updatedDate": "2024-01-25T19:55:05.646Z",
     "keywords": [
-      "muerte",
-      "misterio",
-      "reencuentro"
+      "death",
+      "mystery",
+      "rejoin"
     ],
     "abstract": "This is a short ghost story about the mystery behind the rejoin of two passed away people",
     "body": {
@@ -16,4 +17,4 @@
       "3": "There is not end in the inner circle that..."
     }
   }
-]
+] 

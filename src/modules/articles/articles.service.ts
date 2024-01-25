@@ -28,8 +28,11 @@ export class ArticlesService {
   async createArticle(newData: any) {
     const data = await readFile(this.articles, 'utf-8');
     const articles = JSON.parse(data);
-    const newArticleId = articles.lenght + 1;
+    const newArticleId = articles.length + 1;
+    console.log(newArticleId)
     newData.id = newArticleId;
+    newData.createdDate = new Date();
+    newData.updatedDate = new Date();
     articles.push(newData)
     const newArticle = JSON.stringify(articles, null, 2);
     await writeFile(this.articles, newArticle)
@@ -37,5 +40,42 @@ export class ArticlesService {
         throw new BadRequestException(`error in the writing process: ${error}`)
       })
     return newData;
+  }
+
+  async updateArticle(id: number, changes: any) {
+    const data = await readFile(this.articles, 'utf-8');
+    const articles = JSON.parse(data);
+    articles.forEach((article: any) => {
+      if (article.id == id) {
+        if (changes.keywords != undefined) article.keywords = changes.keywords;
+        if (changes.title != undefined) article.title = changes.title;
+        if (changes.author != undefined) article.author = changes.author;
+        if (changes.abstract != undefined) article.abstract = changes.abstract;
+        if (changes.body != undefined) article.body = changes.body;
+        article.updatedDate = new Date();
+        const newArticle = JSON.stringify(articles, null, 2)
+        writeFile(this.articles, newArticle)
+          .catch(error => {
+            throw new BadRequestException(`error in the writing process: ${error}`)
+        })
+      }
+    })
+    return changes;
+  }
+
+  async deleteArticle(id: number) {
+    const data = await readFile(this.articles, 'utf-8');
+    const articles = JSON.parse(data);
+    articles.forEach((article: any) => {
+      if (article.id == id) {
+        articles.splice(articles.indexOf(article), 1);
+      }
+      const deletedArticle = JSON.stringify(articles, null, 2);
+      writeFile(this.articles, deletedArticle)
+        .catch(error => {
+          throw new BadRequestException(`error in the writing process: ${error}`)
+      })
+    })
+    return { message: 'article erased successfully' };
   }
 }

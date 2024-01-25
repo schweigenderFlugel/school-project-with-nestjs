@@ -33,9 +33,5 @@ import { ArticlesModule } from './modules/articles/articles.module';
       })
     })
   ],
-  providers: [{
-    provide: 'APP_FILTER',
-    useClass: HttpExceptionFilter,
-  }]
 })
 export class AppModule {}
