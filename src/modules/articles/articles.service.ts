@@ -29,7 +29,6 @@ export class ArticlesService {
     const data = await readFile(this.articles, 'utf-8');
     const articles = JSON.parse(data);
     const newArticleId = articles.length + 1;
-    console.log(newArticleId)
     newData.id = newArticleId;
     newData.createdDate = new Date();
     newData.updatedDate = new Date();
@@ -45,14 +44,14 @@ export class ArticlesService {
   async updateArticle(id: number, changes: any) {
     const data = await readFile(this.articles, 'utf-8');
     const articles = JSON.parse(data);
-    articles.forEach((article: any) => {
-      if (article.id == id) {
-        if (changes.keywords != undefined) article.keywords = changes.keywords;
-        if (changes.title != undefined) article.title = changes.title;
-        if (changes.author != undefined) article.author = changes.author;
-        if (changes.abstract != undefined) article.abstract = changes.abstract;
-        if (changes.body != undefined) article.body = changes.body;
-        article.updatedDate = new Date();
+    articles.forEach((item: any) => {
+      if (item.id == id) {
+        if (changes.keywords != undefined) item.keywords = changes.keywords;
+        if (changes.title != undefined) item.title = changes.title;
+        if (changes.author != undefined) item.author = changes.author;
+        if (changes.abstract != undefined) item.abstract = changes.abstract;
+        if (changes.body != undefined) item.body = changes.body;
+        item.updatedDate = new Date();
         const newArticle = JSON.stringify(articles, null, 2)
         writeFile(this.articles, newArticle)
           .catch(error => {
@@ -66,9 +65,10 @@ export class ArticlesService {
   async deleteArticle(id: number) {
     const data = await readFile(this.articles, 'utf-8');
     const articles = JSON.parse(data);
-    articles.forEach((article: any) => {
-      if (article.id == id) {
-        articles.splice(articles.indexOf(article), 1);
+    articles.forEach((item: any) => {
+      if (item.id == id) {
+        articles.splice(articles.indexOf(item), 1);
+        console.log(articles.indexOf(item))
       }
       const deletedArticle = JSON.stringify(articles, null, 2);
       writeFile(this.articles, deletedArticle)
