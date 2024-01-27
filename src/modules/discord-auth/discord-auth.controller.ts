@@ -27,21 +27,21 @@ export class DiscordAuthController {
     return await this.authDiscordService.getDiscordToken();
   }
 
-  @ApiOperation({ summary: 'get user data by the discord id'})
+  @ApiOperation({ summary: 'get user data by the discord id' })
   @Get('discord/user')
   async getUser() {
-    return await this.authDiscordService.getUser()
+    return await this.authDiscordService.getUser();
   }
 
-  @ApiOperation({ summary: 'create a new user from the discord user data'})
+  @ApiOperation({ summary: 'create a new user from the discord user data' })
   @Get('discord/create')
   async createUser() {
-    return await this.authDiscordService.createUser()
+    return await this.authDiscordService.createUser();
   }
 
-  @ApiOperation({ summary: 'revoke the access token'})
+  @ApiOperation({ summary: 'revoke the access token' })
   @Get('discord/revoke')
   async revokeAuth(@Res() res: Response) {
-    return await this.authDiscordService.revokeAuth(res)
+    return await this.authDiscordService.revokeAuth(res);
   }
 }

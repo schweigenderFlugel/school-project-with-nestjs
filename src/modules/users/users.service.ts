@@ -1,5 +1,10 @@
-import { Injectable, Inject, NotFoundException, ConflictException } from '@nestjs/common';
-import { Role } from '../../common/models/roles.model'; 
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
+import { Role } from '../../common/models/roles.model';
 import { UsersRepository } from './users.repository';
 import { IUsersRepository } from './interfaces/users.repository.interface';
 import { Users } from './users.entity';
@@ -22,11 +27,11 @@ export class UsersService {
       recoveryToken: [],
       role: Role.ADMIN,
       profileId: '1',
-      createdAt: "2023-12-21T20:08:43.084Z",
-      updatedAt: "2023-12-21T20:08:43.084Z",
+      createdAt: '2023-12-21T20:08:43.084Z',
+      updatedAt: '2023-12-21T20:08:43.084Z',
     },
     {
-      id: "54f47a6a-5b36-4738-99d4-b34723c9e2dc",
+      id: '54f47a6a-5b36-4738-99d4-b34723c9e2dc',
       email: 'normal@email.com',
       username: 'normal',
       password: '$2b$10$JclD5ZmslCCbQApatOy3fOA3/GWnkgRb6T4EYMLxn44z8vtxEuQIu',
@@ -34,10 +39,10 @@ export class UsersService {
       recoveryToken: [],
       role: Role.NORMAL,
       profileId: '2',
-      createdAt: "2023-12-21T21:04:27.084Z",
-      updatedAt: "2023-12-21T21:04:27.084Z",
-    }
-  ]
+      createdAt: '2023-12-21T21:04:27.084Z',
+      updatedAt: '2023-12-21T21:04:27.084Z',
+    },
+  ];
 
   async getUsers() {
     return this.users;
@@ -48,15 +53,15 @@ export class UsersService {
     if (!userFound) {
       throw new NotFoundException('user not found');
     }
-    delete userFound.refreshToken
-    delete userFound.recoveryToken
+    delete userFound.refreshToken;
+    delete userFound.recoveryToken;
     return userFound;
   }
 
   async getUserByEmail(email: string) {
     const userFound = await this.usersRepository.findByEmail(email);
     if (!userFound) {
-      throw new NotFoundException('user not found!')
+      throw new NotFoundException('user not found!');
     }
     return userFound;
   }
@@ -71,7 +76,7 @@ export class UsersService {
   }
 
   async updateUser(id: string, changes: any) {
-    const userFound = this.users.find(user => user.id === id);
+    const userFound = this.users.find((user) => user.id === id);
     if (!userFound) {
       throw new NotFoundException('user not found');
     }
@@ -81,7 +86,9 @@ export class UsersService {
 
   async saveRefreshToken(id: number, jwtCookie: string, refreshToken: string) {
     const userFound = await this.usersRepository.findOne(id);
-    const newRefreshTokenArray = userFound.refreshToken.filter(rt => rt !== jwtCookie);
+    const newRefreshTokenArray = userFound.refreshToken.filter(
+      (rt) => rt !== jwtCookie,
+    );
     userFound.refreshToken = [...newRefreshTokenArray, refreshToken];
     const session = new Users(userFound.refreshToken, id);
     await this.usersRepository.saveRefreshToken(session);
@@ -89,17 +96,19 @@ export class UsersService {
 
   async removeRefreshToken(id: number, jwtCookie: string) {
     const userFound = await this.usersRepository.findOne(id);
-    const newRefreshTokenArray = userFound.refreshToken.filter(rt => rt !== jwtCookie);
+    const newRefreshTokenArray = userFound.refreshToken.filter(
+      (rt) => rt !== jwtCookie,
+    );
     userFound.refreshToken = [...newRefreshTokenArray];
     const session = new Users(userFound.refreshToken, id);
     await this.usersRepository.removeRefreshToken(session);
   }
 
   async deleteUser(id: string) {
-    const userFound = this.users.find(user => user.id === id);
+    const userFound = this.users.find((user) => user.id === id);
     if (!userFound) {
       throw new NotFoundException('user not found');
     }
-    return this.users.filter(user => user.id !== userFound.id);
+    return this.users.filter((user) => user.id !== userFound.id);
   }
 }

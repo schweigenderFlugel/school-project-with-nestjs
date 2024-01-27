@@ -6,11 +6,10 @@ import { CloudinaryModule } from '../cloudinary/cloudinary.module';
 import { Profile } from './profile.entity';
 import { ProfileRepository } from './profile.repository';
 
-
 @Module({
-    imports: [CloudinaryModule, TypeOrmModule.forFeature([Profile])],
-    controllers: [ProfileController],
-    providers: [ProfileService, ProfileRepository],
-    exports: [ProfileService]
+  imports: [CloudinaryModule, TypeOrmModule.forFeature([Profile])],
+  controllers: [ProfileController],
+  providers: [ProfileService, ProfileRepository],
+  exports: [ProfileService],
 })
 export class ProfileModule {}

@@ -1,13 +1,19 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Role } from '../../common/models/roles.model';
 
-@Entity({ name: 'users'})
+@Entity({ name: 'users' })
 export class Users {
   constructor(refreshToken: string[], id: number) {
     this.id = id;
     this.refreshToken = refreshToken;
   }
-    
+
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -27,14 +33,22 @@ export class Users {
   recoveryToken: string[];
 
   @Column({ default: Role.NORMAL })
-  role: string
+  role: string;
 
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
-  @CreateDateColumn({ name: 'create_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({
+    name: 'create_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn({
+    name: 'updated_at',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   updatedAt: Date;
 }

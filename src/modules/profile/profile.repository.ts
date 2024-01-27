@@ -8,20 +8,20 @@ import { IUpdateProfile } from './interfaces/profile.interface';
 export class ProfileRepository implements IProfileRepository {
   repository: Repository<Profile>;
   constructor(private dataSource: DataSource) {
-    this.repository = this.dataSource.getRepository(Profile)
+    this.repository = this.dataSource.getRepository(Profile);
   }
 
   async findByUserId(userId: any): Promise<Profile> {
     return await this.repository.findOne({
       where: { user: userId },
-    })
+    });
   }
-  
+
   async create(newProfile: Profile): Promise<Profile> {
-    return await this.repository.save(newProfile)
+    return await this.repository.save(newProfile);
   }
 
   async update(changes: IUpdateProfile): Promise<Profile> {
-    return await this.repository.save(changes)
+    return await this.repository.save(changes);
   }
 }

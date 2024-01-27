@@ -1,30 +1,30 @@
-import { Injectable } from "@nestjs/common";
-import { Repository, DataSource } from "typeorm";
-import { Users } from "./users.entity";
-import { ICreateUser } from "./interfaces/users.interface";
-import { IUsersRepository } from "./interfaces/users.repository.interface";
+import { Injectable } from '@nestjs/common';
+import { Repository, DataSource } from 'typeorm';
+import { Users } from './users.entity';
+import { ICreateUser } from './interfaces/users.interface';
+import { IUsersRepository } from './interfaces/users.repository.interface';
 
 @Injectable()
 export class UsersRepository implements IUsersRepository {
-  repository: Repository<Users>
+  repository: Repository<Users>;
   constructor(private dataSource: DataSource) {
-    this.repository = this.dataSource.getRepository(Users)
+    this.repository = this.dataSource.getRepository(Users);
   }
 
   async getAll() {
-    return await this.repository.find()
+    return await this.repository.find();
   }
 
   async findOne(id: number): Promise<Users | null> {
     return this.repository.findOne({
       where: { id: id },
-    })
+    });
   }
 
   async findByEmail(email: string): Promise<Users | null> {
     return this.repository.findOne({
       where: { email: email },
-    })
+    });
   }
 
   async create(newUser: ICreateUser): Promise<Users> {
@@ -43,8 +43,8 @@ export class UsersRepository implements IUsersRepository {
   async delete(id: number): Promise<void> {
     const userFound = await this.repository.findOne({
       where: { id: id },
-      relations: ['profile']
-    })
-    await this.repository.remove(userFound)
+      relations: ['profile'],
+    });
+    await this.repository.remove(userFound);
   }
 }

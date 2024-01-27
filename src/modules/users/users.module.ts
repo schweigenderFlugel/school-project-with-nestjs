@@ -13,5 +13,4 @@ import { ProfileModule } from '../profile/profile.module';
   providers: [UsersService, UsersRepository],
   exports: [UsersService],
 })
-
 export class UsersModule {}

@@ -12,17 +12,15 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { RefreshJwtStrategy } from './strategies/refresh-jwt.strategy';
 
-
-@Module({ 
+@Module({
   imports: [
     UsersModule,
     ProfileModule,
     NodemailerModule,
     PassportModule,
-    JwtModule.register({})
+    JwtModule.register({}),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, RefreshJwtStrategy]
+  providers: [AuthService, LocalStrategy, JwtStrategy, RefreshJwtStrategy],
 })
-
 export class AuthModule {}

@@ -1,11 +1,18 @@
-import { Controller, Get, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Put,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { JwtGuard } from '../../common/guards/jwt.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/models/roles.model';
 import { RolesGuard } from '../../common/guards/roles.guard';
-
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -23,7 +30,7 @@ export class UsersController {
 
   @Get('/:email')
   async getUserByEmail(@Param('email') email: string) {
-    return this.usersService.getUserByEmail(email)
+    return this.usersService.getUserByEmail(email);
   }
 
   @ApiOperation({ summary: 'update the user information' })
@@ -36,6 +43,6 @@ export class UsersController {
 
   @Delete(':id')
   async deleteUser(@Param('id') id: string) {
-    this.usersService.deleteUser(id)
+    this.usersService.deleteUser(id);
   }
 }

@@ -14,7 +14,7 @@ import { DiscordAuthModule } from './modules/discord-auth/discord-auth.module';
 
 @Module({
   imports: [
-    UsersModule, 
+    UsersModule,
     AuthModule,
     DiscordAuthModule,
     ProfileModule,
@@ -22,18 +22,20 @@ import { DiscordAuthModule } from './modules/discord-auth/discord-auth.module';
     NodemailerModule,
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [config]
+      load: [config],
     }),
     TypeOrmModule.forRootAsync({
       useFactory: () => ({
         ...dataSourceOption,
         autoLoadEntities: true,
-      })
-    })
+      }),
+    }),
   ],
-  providers: [{
-    provide: 'APP_FILTER',
-    useClass: HttpExceptionFilter,
-  }]
+  providers: [
+    {
+      provide: 'APP_FILTER',
+      useClass: HttpExceptionFilter,
+    },
+  ],
 })
 export class AppModule {}

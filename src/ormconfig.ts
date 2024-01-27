@@ -10,7 +10,7 @@ const production: DataSourceOptions = {
   database: process.env.DB_DATABASE,
   migrations: ['./data/migrations/**/*.ts'],
   synchronize: false,
-}
+};
 
 const development: DataSourceOptions = {
   type: 'mysql',
@@ -21,7 +21,7 @@ const development: DataSourceOptions = {
   database: process.env.DB_DATABASE,
   migrations: ['./data/migrations/**/*.ts'],
   synchronize: true,
-}
+};
 
 const automatedTests: DataSourceOptions = {
   type: 'better-sqlite3',
@@ -29,19 +29,19 @@ const automatedTests: DataSourceOptions = {
   migrations: ['./data/migration'],
   synchronize: true,
   dropSchema: true,
-  verbose: console.log
-}
+  verbose: console.log,
+};
 
 export const dataSourceOption: DataSourceOptions = (() => {
-  if(process.env.NODE_ENV === ENVIRONMENTS.PRODUCTION) {
+  if (process.env.NODE_ENV === ENVIRONMENTS.PRODUCTION) {
     return production;
   }
 
-  if(process.env.NODE_ENV === ENVIRONMENTS.DEVELOPMENT) {
+  if (process.env.NODE_ENV === ENVIRONMENTS.DEVELOPMENT) {
     return development;
   }
 
-  if(process.env.NODE_ENV === ENVIRONMENTS.AUTOMATED_TESTS) {
+  if (process.env.NODE_ENV === ENVIRONMENTS.AUTOMATED_TESTS) {
     return automatedTests;
   }
-})()
+})();

@@ -6,12 +6,14 @@ import config from '../../../config';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  constructor(@Inject(config.KEY) readonly configService: ConfigType<typeof config>) {
+  constructor(
+    @Inject(config.KEY) readonly configService: ConfigType<typeof config>,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.jwtSecret
-    })
+      secretOrKey: configService.jwtSecret,
+    });
   }
 
   async validate(payload: any) {

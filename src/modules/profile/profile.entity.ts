@@ -1,10 +1,16 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToOne,
+  JoinColumn,
+} from 'typeorm';
 import { Users } from '../users/users.entity';
 
 @Entity({ name: 'profile' })
 export class Profile {
   constructor(userId: any) {
-    this.user = userId
+    this.user = userId;
   }
 
   @PrimaryGeneratedColumn()
@@ -12,17 +18,17 @@ export class Profile {
 
   @Column({ type: 'varchar' })
   fullName: string;
-  
+
   @Column({ type: 'varchar' })
   address: string;
 
   @Column({ type: 'bigint' })
   phone: number;
 
-  @Column({ type: 'text'})
+  @Column({ type: 'text' })
   description: string;
 
-  @Column({ type: 'text'})
+  @Column({ type: 'text' })
   imageUrl: string;
 
   @OneToOne(() => Users, (users) => users.id)

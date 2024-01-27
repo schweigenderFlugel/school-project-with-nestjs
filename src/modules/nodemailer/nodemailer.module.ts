@@ -16,11 +16,11 @@ import config from '../../config';
           secure: true,
           port: configService.nodemailerPort,
           tls: {
-            rejectUnauthorized: false
+            rejectUnauthorized: false,
           },
           auth: {
             user: configService.nodemailerUser,
-            pass: configService.nodemailerPass
+            pass: configService.nodemailerPass,
           },
         },
         template: {
@@ -28,13 +28,12 @@ import config from '../../config';
           adapter: new HandlebarsAdapter(),
           options: {
             strict: true,
-          }
-        }
-      })
-    })
+          },
+        },
+      }),
+    }),
   ],
   providers: [NodemailerService],
   exports: [NodemailerService],
 })
-
 export class NodemailerModule {}

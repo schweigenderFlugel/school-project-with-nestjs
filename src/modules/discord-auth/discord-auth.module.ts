@@ -8,9 +8,8 @@ import { DiscordAuthRepository } from './discord-auth.repository';
 import { DiscordAuth } from './discord-auth.entity';
 
 @Module({
-    imports: [HttpModule, TypeOrmModule.forFeature([DiscordAuth])],
-    controllers: [DiscordAuthController],
-    providers: [DiscordStrategy, DiscordAuthService, DiscordAuthRepository]
+  imports: [HttpModule, TypeOrmModule.forFeature([DiscordAuth])],
+  controllers: [DiscordAuthController],
+  providers: [DiscordStrategy, DiscordAuthService, DiscordAuthRepository],
 })
-
 export class DiscordAuthModule {}

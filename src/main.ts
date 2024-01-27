@@ -9,15 +9,17 @@ declare const module: any;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-  }))
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
 
   app.enableCors({
     origin: ['http://localhost:5173'],
     credentials: true,
-  })
+  });
 
   app.use(cookieParser());
   app.useGlobalInterceptors(new RequestInterceptor());
@@ -29,8 +31,8 @@ async function bootstrap() {
     .setDescription('this an API for testing')
     .setVersion('1.0')
     .addTag('')
-    .build()
-  const document = SwaggerModule.createDocument(app, config)
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
 
   await app.listen(3000);

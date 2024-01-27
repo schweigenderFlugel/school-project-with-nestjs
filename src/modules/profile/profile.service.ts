@@ -1,5 +1,5 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import * as fs from 'node:fs'
+import * as fs from 'node:fs';
 import * as dotenv from 'dotenv';
 
 import { ENVIRONMENTS } from '../../environments';
@@ -9,12 +9,13 @@ import { ProfileRepository } from './profile.repository';
 import { IProfileRepository } from './interfaces/profile.repository.interface';
 import { Profile } from './profile.entity';
 
-dotenv.config()
+dotenv.config();
 
 @Injectable()
 export class ProfileService {
   constructor(
-    @Inject(ProfileRepository) private readonly profileRepository: IProfileRepository,
+    @Inject(ProfileRepository)
+    private readonly profileRepository: IProfileRepository,
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
@@ -26,7 +27,7 @@ export class ProfileService {
       phone: 2610000000,
       description: '',
       userId: '383bfd34-d368-4981-90dc-8481e45e91da',
-      imageUrl: ''
+      imageUrl: '',
     },
     {
       id: '2',
@@ -35,10 +36,10 @@ export class ProfileService {
       phone: 2610000001,
       description: '',
       userId: '54f47a6a-5b36-4738-99d4-b34723c9e2dc',
-      imageUrl: ''
-    }
-  ]
-    
+      imageUrl: '',
+    },
+  ];
+
   async getProfile(user: any) {
     const profileFound = await this.profileRepository.findByUserId(user.id);
     if (!profileFound) throw new NotFoundException('profile not found');
@@ -50,10 +51,14 @@ export class ProfileService {
     return await this.profileRepository.create(newProfile);
   }
 
-  async updateProfile(user: any, changes: UpdateProfileDto, image: Express.Multer.File) {
+  async updateProfile(
+    user: any,
+    changes: UpdateProfileDto,
+    image: Express.Multer.File,
+  ) {
     const profileFound = await this.profileRepository.findByUserId(user.id);
     if (!profileFound) throw new NotFoundException('profile not found');
-    
+
     if (process.env.NODE_ENV === ENVIRONMENTS.PRODUCTION) {
       const result = await this.cloudinaryService.uploadFile(image, 'profile');
       profileFound.imageUrl = result.secure_url;
@@ -66,7 +71,7 @@ export class ProfileService {
           const updatedProfile = this.profileRepository.update(profileFound);
           return updatedProfile;
         }
-      })
+      });
       profileFound.imageUrl = image?.path;
       const updatedProfile = Object.assign(profileFound, changes);
       return updatedProfile;

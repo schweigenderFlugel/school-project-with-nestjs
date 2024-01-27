@@ -20,12 +20,6 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prepare": "husky install"
   },
-  "lint-staged": {
-    "scr/**/*.ts": [
-      "npm run lint",
-      "npm run format"
-    ]
-  },
   "dependencies": {
     "@nestjs-modules/mailer": "^1.10.3",
     "@nestjs/axios": "^3.0.1",

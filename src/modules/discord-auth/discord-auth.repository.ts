@@ -5,19 +5,19 @@ import { IDiscordAuthRepository } from './interfaces/discord-auth.repository.int
 
 @Injectable()
 export class DiscordAuthRepository implements IDiscordAuthRepository {
-  repository: Repository<DiscordAuth>
+  repository: Repository<DiscordAuth>;
   constructor(private discordAuthRepository: DataSource) {
     this.repository = this.discordAuthRepository.getRepository(DiscordAuth);
   }
 
   async findByDiscordId(discordId: string): Promise<DiscordAuth> {
     return await this.repository.findOne({
-      where: { discordId: discordId }
-    })
+      where: { discordId: discordId },
+    });
   }
 
   async save(data: DiscordAuth): Promise<void> {
-    const newUser = this.repository.create(data)
+    const newUser = this.repository.create(data);
     await this.repository.save(newUser);
   }
 }
