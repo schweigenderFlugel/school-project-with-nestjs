@@ -41,14 +41,13 @@ export class ProfileService {
   ];
 
   async getProfile(user: any) {
-    const profileFound = await this.profileRepository.findByUserId(user.id);
+    const profileFound = await this.profileRepository.findById(user.profileId);
     if (!profileFound) throw new NotFoundException('profile not found');
     return profileFound;
   }
 
-  async createProfile(userId: any): Promise<Profile> {
-    const newProfile = new Profile(userId);
-    return await this.profileRepository.create(newProfile);
+  async createProfile(): Promise<Profile> {
+    return await this.profileRepository.create();
   }
 
   async updateProfile(
@@ -56,7 +55,7 @@ export class ProfileService {
     changes: UpdateProfileDto,
     image: Express.Multer.File,
   ) {
-    const profileFound = await this.profileRepository.findByUserId(user.id);
+    const profileFound = await this.profileRepository.findById(user.profileId);
     if (!profileFound) throw new NotFoundException('profile not found');
 
     if (process.env.NODE_ENV === ENVIRONMENTS.PRODUCTION) {

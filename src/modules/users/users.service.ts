@@ -68,8 +68,9 @@ export class UsersService {
 
   async createUser(data: any) {
     try {
-      const newUser = await this.usersRepository.create(data);
-      await this.profileService.createProfile(newUser.id);
+      const profileId = await this.profileService.createProfile();
+      data.profileId = profileId;
+      await this.usersRepository.create(data);
     } catch (error) {
       throw new ConflictException(error);
     }

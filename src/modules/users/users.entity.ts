@@ -4,8 +4,11 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne,
+  JoinColumn
 } from 'typeorm';
 import { Role } from '../../common/models/roles.model';
+import { Profile } from '../profile/profile.entity';
 
 @Entity({ name: 'users' })
 export class Users {
@@ -17,11 +20,12 @@ export class Users {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar', length: '255', unique: true })
-  email: string;
+  @OneToOne(() => Profile, (profile) => profile.id)
+  @JoinColumn({ name: 'profile_id' })
+  profileId: number;
 
   @Column({ type: 'varchar', length: '255', unique: true })
-  username: string;
+  email: string;
 
   @Column({ type: 'varchar', length: '255' })
   password: string;

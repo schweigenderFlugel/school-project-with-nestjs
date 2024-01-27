@@ -34,7 +34,7 @@ export class AuthService {
   ): Promise<void> {
     res.cookie(name, refreshToken, {
       httpOnly: true,
-      secure: true,
+      secure: false,
       sameSite: 'none',
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });
@@ -43,7 +43,7 @@ export class AuthService {
   private async removeCookie(res: Response): Promise<void> {
     res.clearCookie('refresh_token', {
       httpOnly: true,
-      secure: true,
+      secure: false,
       sameSite: 'none',
     });
   }
@@ -54,7 +54,7 @@ export class AuthService {
         const hashedPassword = await bcrypt.hash(data.password, 10);
         data.password = hashedPassword;
         await this.usersService.createUser(data);
-        await this.nodemailerService.sendMail(data.email);
+        // await this.nodemailerService.sendMail(data.email);
         return { message: 'new user created' };
       } else {
         throw new BadRequestException('the passwords should be equal');
@@ -85,13 +85,13 @@ export class AuthService {
     try {
       const jwtCookie = req.cookies.refresh_token;
       if (!jwtCookie) {
-        const payload = { sub: user.id, role: user.role };
+        const payload = { sub: user.id, profileId: user.profileId, role: user.role };
         const accessToken = await this.jwtService.signAsync(payload, {
-          expiresIn: '10s',
+          expiresIn: '10m',
           secret: this.configService.jwtSecret,
         });
         const refreshToken = await this.jwtService.signAsync(payload, {
-          expiresIn: '15s',
+          expiresIn: '1d',
           secret: this.configService.jwtRefresh,
         });
         await this.setCookie('refresh_token', res, refreshToken);
@@ -132,11 +132,11 @@ export class AuthService {
       const decoded = await this.jwtService.decode(jwtCookie);
       const payload = { sub: decoded.sub, role: decoded.role };
       const accessToken = await this.jwtService.signAsync(payload, {
-        expiresIn: '10s',
+        expiresIn: '10m',
         secret: this.configService.jwtSecret,
       });
       const newRefreshToken = await this.jwtService.signAsync(payload, {
-        expiresIn: '15s',
+        expiresIn: '1d',
         secret: this.configService.jwtRefresh,
       });
       await this.removeCookie(res);

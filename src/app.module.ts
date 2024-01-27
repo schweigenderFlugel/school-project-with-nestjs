@@ -6,11 +6,10 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ProfileModule } from './modules/profile/profile.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
-import config from './config';
-import { dataSourceOption } from './ormconfig';
 import { NodemailerModule } from './modules/nodemailer/nodemailer.module';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { DiscordAuthModule } from './modules/discord-auth/discord-auth.module';
+import { dataSourceOption } from './ormconfig';
+import config from './config';
 
 @Module({
   imports: [
@@ -30,12 +29,6 @@ import { DiscordAuthModule } from './modules/discord-auth/discord-auth.module';
         autoLoadEntities: true,
       }),
     }),
-  ],
-  providers: [
-    {
-      provide: 'APP_FILTER',
-      useClass: HttpExceptionFilter,
-    },
   ],
 })
 export class AppModule {}

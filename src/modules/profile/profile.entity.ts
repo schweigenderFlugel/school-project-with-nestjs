@@ -2,36 +2,29 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  OneToOne,
-  JoinColumn,
 } from 'typeorm';
-import { Users } from '../users/users.entity';
 
 @Entity({ name: 'profile' })
 export class Profile {
-  constructor(userId: any) {
-    this.user = userId;
-  }
 
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', length: '15', unique: true, nullable: true })
+  username: string;
+
+  @Column({ type: 'varchar', length: '50', nullable: true })
   fullName: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', length: '50', nullable: true })
   address: string;
 
-  @Column({ type: 'bigint' })
+  @Column({ type: 'bigint', nullable: true })
   phone: number;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   imageUrl: string;
-
-  @OneToOne(() => Users, (users) => users.id)
-  @JoinColumn({ name: 'user_id' })
-  user: Users;
 }
