@@ -13,6 +13,9 @@ export class DiscordAuthRepository implements IDiscordAuthRepository {
   async findByDiscordId(discordId: string): Promise<DiscordAuth> {
     return await this.repository.findOne({
       where: { discordId: discordId },
+      relations: {
+        profileId: true,
+      },
     });
   }
 

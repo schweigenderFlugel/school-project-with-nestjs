@@ -16,6 +16,7 @@ import {
 import { DiscordAuth } from './discord-auth.entity';
 import { DiscordAuthRepository } from './discord-auth.repository';
 import { IDiscordAuthRepository } from './interfaces/discord-auth.repository.interface';
+import { ProfileService } from '../profile/profile.service';
 import config from '../../config';
 
 let accessToken: string;
@@ -29,6 +30,7 @@ export class DiscordAuthService {
     @Inject(DiscordAuthRepository)
     private readonly discordAuthRepository: IDiscordAuthRepository,
     private readonly httpService: HttpService,
+    private readonly profileService: ProfileService,
   ) {}
 
   async discordAuthRedirect(req: any, res: Response) {
@@ -112,7 +114,10 @@ export class DiscordAuthService {
         ),
       );
 
+      const profile = await this.profileService.createProfile();
+
       const newUser = new DiscordAuth(
+        profile.id,
         userResponse.id,
         userResponse.username,
         userResponse.email,

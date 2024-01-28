@@ -11,14 +11,14 @@ export class ProfileRepository implements IProfileRepository {
     this.repository = this.dataSource.getRepository(Profile);
   }
 
-  async findById(id: number): Promise<Profile> {
+  async findById(id: number): Promise<Profile | null> {
     return await this.repository.findOne({
       where: { id: id },
     });
   }
 
   async create(): Promise<Profile> {
-    const newProfile = this.repository.create()
+    const newProfile = this.repository.create();
     return await this.repository.save(newProfile);
   }
 

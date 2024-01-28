@@ -1,14 +1,13 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToOne } from 'typeorm';
+import { Users } from '../users/users.entity';
 
 @Entity({ name: 'profile' })
 export class Profile {
-
   @PrimaryGeneratedColumn()
   id: number;
+
+  @OneToOne(() => Users, (users) => users.profileId)
+  user: Users;
 
   @Column({ type: 'varchar', length: '15', unique: true, nullable: true })
   username: string;

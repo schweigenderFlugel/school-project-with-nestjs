@@ -21,7 +21,6 @@ export class UsersService {
     {
       id: '383bfd34-d368-4981-90dc-8481e45e91da',
       email: 'admin@email.com',
-      username: 'admin',
       password: '$2b$10$JclD5ZmslCCbQApatOy3fOA3/GWnkgRb6T4EYMLxn44z8vtxEuQIu',
       refreshToken: [],
       recoveryToken: [],
@@ -33,7 +32,6 @@ export class UsersService {
     {
       id: '54f47a6a-5b36-4738-99d4-b34723c9e2dc',
       email: 'normal@email.com',
-      username: 'normal',
       password: '$2b$10$JclD5ZmslCCbQApatOy3fOA3/GWnkgRb6T4EYMLxn44z8vtxEuQIu',
       refreshToken: [],
       recoveryToken: [],
@@ -45,7 +43,7 @@ export class UsersService {
   ];
 
   async getUsers() {
-    return this.users;
+    return this.usersRepository.getAll();
   }
 
   async getUserById(id: number) {

@@ -12,7 +12,11 @@ export class UsersRepository implements IUsersRepository {
   }
 
   async getAll() {
-    return await this.repository.find();
+    return await this.repository.find({
+      relations: {
+        profileId: true,
+      },
+    });
   }
 
   async findOne(id: number): Promise<Users | null> {

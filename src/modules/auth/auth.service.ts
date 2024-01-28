@@ -54,7 +54,7 @@ export class AuthService {
         const hashedPassword = await bcrypt.hash(data.password, 10);
         data.password = hashedPassword;
         await this.usersService.createUser(data);
-        // await this.nodemailerService.sendMail(data.email);
+        await this.nodemailerService.sendMail(data.email);
         return { message: 'new user created' };
       } else {
         throw new BadRequestException('the passwords should be equal');
@@ -70,11 +70,13 @@ export class AuthService {
   async validateUser(email: string, password: string): Promise<object> {
     try {
       const userFound = await this.usersService.getUserByEmail(email);
-      const isMatch = await bcrypt.compare(password, userFound.password);
       if (userFound.isActive !== true)
         throw new ForbiddenException('not allowed to login');
-      if (isMatch) return userFound;
-      else return null;
+      const isMatch = await bcrypt.compare(password, userFound.password);
+      if (isMatch) {
+        return userFound;
+      }
+      return null;
     } catch (error) {
       if (error instanceof ForbiddenException)
         throw new ForbiddenException(error.message);
@@ -85,7 +87,11 @@ export class AuthService {
     try {
       const jwtCookie = req.cookies.refresh_token;
       if (!jwtCookie) {
-        const payload = { sub: user.id, profileId: user.profileId, role: user.role };
+        const payload = {
+          sub: user.id,
+          profileId: user.profileId,
+          role: user.role,
+        };
         const accessToken = await this.jwtService.signAsync(payload, {
           expiresIn: '10m',
           secret: this.configService.jwtSecret,

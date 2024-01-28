@@ -5,7 +5,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToOne,
-  JoinColumn
+  JoinColumn,
 } from 'typeorm';
 import { Role } from '../../common/models/roles.model';
 import { Profile } from '../profile/profile.entity';
@@ -20,9 +20,9 @@ export class Users {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => Profile, (profile) => profile.id)
+  @OneToOne(() => Profile)
   @JoinColumn({ name: 'profile_id' })
-  profileId: number;
+  profileId: Profile;
 
   @Column({ type: 'varchar', length: '255', unique: true })
   email: string;
