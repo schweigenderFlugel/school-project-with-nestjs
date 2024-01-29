@@ -13,7 +13,7 @@ export class DiscordStrategy extends PassportStrategy(Strategy, 'discord') {
       clientID: configService.discordClientId,
       clientSecret: configService.discordClientSecret,
       callbackURL: '/discord/redirect',
-      scope: ['identify'],
+      scope: ['identify', 'email'],
     });
   }
 

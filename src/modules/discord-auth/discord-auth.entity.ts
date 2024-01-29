@@ -10,30 +10,13 @@ import { Profile } from '../profile/profile.entity';
 
 @Entity({ name: 'discord-auth' })
 export class DiscordAuth {
-  constructor(
-    profileId: any,
-    discordId: string,
-    username: string,
-    email: string,
-    avatar: string,
-    discriminator: string,
-    refreshToken: string,
-  ) {
-    (this.profileId = profileId),
-      (this.discordId = discordId),
-      (this.username = username),
-      (this.email = email),
-      (this.avatar = avatar),
-      (this.discriminator = discriminator),
-      (this.refreshToken = refreshToken);
-  }
 
   @PrimaryGeneratedColumn()
   id: number;
 
   @OneToOne(() => Profile)
   @JoinColumn({ name: 'profile_id' })
-  profileId: Profile;
+  profileId: Profile | number;
 
   @Column({ name: 'discord_id', type: 'varchar', unique: true })
   discordId: string;
@@ -49,9 +32,6 @@ export class DiscordAuth {
 
   @Column()
   discriminator: string;
-
-  @Column({ name: 'refresh_token' })
-  refreshToken: string;
 
   @Column({ default: Role.NORMAL })
   role: string;

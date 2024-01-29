@@ -84,16 +84,10 @@ export class DiscordAuthService {
         userResponse.id,
       );
       if (!userFound) {
-        return {
-          message: 'reading directly from the discord authentication data',
-          id: userResponse.id,
-          username: userResponse.username,
-          email: userResponse.email,
-          avatar: userResponse.avatar,
-          discriminator: userResponse.discriminator,
-        };
+        return await this.createUser();
+      } else {
+        return await this.updateUser();
       }
-      return userFound;
     } catch (error) {
       if (error instanceof NotFoundError)
         throw new NotFoundException(error.message);
@@ -116,17 +110,45 @@ export class DiscordAuthService {
 
       const profile = await this.profileService.createProfile();
 
-      const newUser = new DiscordAuth(
-        profile.id,
-        userResponse.id,
-        userResponse.username,
-        userResponse.email,
-        userResponse.avatar,
-        userResponse.discriminator,
-        refreshToken,
-      );
+      const newUser = new DiscordAuth();
+      newUser.profileId = profile.id;
+      newUser.discordId = userResponse.id;
+      newUser.username = userResponse.username;
+      newUser.email = userResponse.email;
+      newUser.avatar = userResponse.avatar;
+      newUser.discriminator = userResponse.discriminator;
       await this.discordAuthRepository.save(newUser);
-      return { message: 'user created with discord successfully!' };
+      return { message: 'user created with discord successfully!', data: userResponse };
+    } catch (error) {
+      throw new BadRequestException(error.response?.data || error.message);
+    }
+  }
+
+  async updateUser() {
+    try {
+      const { data: userResponse } = await firstValueFrom(
+        this.httpService.get<DiscordOAuth2UserDataResponse>(
+          'https://discord.com/api/users/@me',
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        ),
+      );
+
+      const userFound = await this.discordAuthRepository.findByDiscordId(
+        userResponse.id,
+      );
+      if (userFound) {
+        const discordAuth = new DiscordAuth();
+        discordAuth.id = userFound.id;
+        discordAuth.username = userResponse.username;
+        discordAuth.avatar = userResponse.avatar;
+        discordAuth.discriminator = userResponse.discriminator;
+        await this.discordAuthRepository.update(discordAuth);
+        return { message: 'user updated successfully!', data: userResponse };
+      }
     } catch (error) {
       throw new BadRequestException(error.response?.data || error.message);
     }
