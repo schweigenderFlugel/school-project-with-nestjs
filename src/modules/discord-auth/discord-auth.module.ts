@@ -7,9 +7,15 @@ import { DiscordAuthService } from './discord-auth.service';
 import { DiscordAuthRepository } from './discord-auth.repository';
 import { DiscordAuth } from './discord-auth.entity';
 import { ProfileModule } from '../profile/profile.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [HttpModule, ProfileModule, TypeOrmModule.forFeature([DiscordAuth])],
+  imports: [
+    HttpModule, 
+    JwtModule.register({}), 
+    TypeOrmModule.forFeature([DiscordAuth]),
+    ProfileModule,
+  ],
   controllers: [DiscordAuthController],
   providers: [DiscordStrategy, DiscordAuthService, DiscordAuthRepository],
 })

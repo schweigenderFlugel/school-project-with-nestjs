@@ -35,4 +35,10 @@ export class DiscordAuth {
 
   @Column({ default: Role.NORMAL })
   role: string;
+
+  @Column({ type: 'boolean', default: true })
+  isActive: boolean;
+
+  @Column({ type: 'json', nullable: true, default: '[]' })
+  refreshToken: string[];
 }

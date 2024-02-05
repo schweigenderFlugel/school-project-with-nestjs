@@ -14,18 +14,24 @@ export class DiscordAuthRepository implements IDiscordAuthRepository {
   async findByDiscordId(discordId: string): Promise<DiscordAuth> {
     return await this.repository.findOne({
       where: { discordId: discordId },
-      relations: {
-        profileId: true,
-      },
     });
   }
 
-  async save(data: IDiscordAuthCreate): Promise<void> {
+  async save(data: IDiscordAuthCreate): Promise<DiscordAuth> {
     const newUser = this.repository.create(data);
-    await this.repository.save(newUser);
+    return await this.repository.save(newUser);
   }
 
   async update(changes: IDiscordAuthUpdate): Promise<void> {
     await this.repository.save(changes);
   }
+
+  async saveRefreshToken(session: DiscordAuth): Promise<void> {
+    await this.repository.save(session);
+  }
+
+  async removeRefreshToken(session: DiscordAuth): Promise<void> {
+    await this.repository.save(session);
+  }
+
 }

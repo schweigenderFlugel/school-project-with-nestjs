@@ -1,13 +1,14 @@
 import {
   Injectable,
   Inject,
-  NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigType } from '@nestjs/config';
-import { NotFoundError, firstValueFrom } from 'rxjs';
-import { Response } from 'express';
+import { JwtService } from '@nestjs/jwt';
+import { firstValueFrom } from 'rxjs';
+import { Request, Response } from 'express';
+import * as cryptoJs from 'crypto-js';
 
 import {
   DiscordOAuth2CredentialsResponse,
@@ -19,8 +20,9 @@ import { IDiscordAuthRepository } from './interfaces/discord-auth.repository.int
 import { ProfileService } from '../profile/profile.service';
 import config from '../../config';
 
-let accessToken: string;
-let refreshToken: string;
+let discordId: string;
+let discordAccessToken: string;
+let discordRefreshToken: string;
 
 @Injectable()
 export class DiscordAuthService {
@@ -30,12 +32,42 @@ export class DiscordAuthService {
     @Inject(DiscordAuthRepository)
     private readonly discordAuthRepository: IDiscordAuthRepository,
     private readonly httpService: HttpService,
+    private readonly jwtService: JwtService,
     private readonly profileService: ProfileService,
   ) {}
 
+  private async encryptToken(token: string): Promise<cryptoJs.lib.CipherParams> {
+    return cryptoJs.AES.encrypt(token, this.configService.encryptSecret)
+  }
+
+  private async decryptToken(encryptedToken: cryptoJs.lib.CipherParams): Promise<cryptoJs.lib.WordArray> {
+    return cryptoJs.AES.decrypt(encryptedToken, this.configService.encryptSecret)
+  }
+
+  private async setCookie(
+    name: string,
+    res: Response,
+    refreshToken: string,
+  ): Promise<void> {
+    res.cookie(name, refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    });
+  }
+
+  private async removeCookie(res: Response): Promise<void> {
+    res.clearCookie('refresh_token', {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+    });
+  }
+
   async discordAuthRedirect(req: any, res: Response) {
-    accessToken = req.user.accessToken;
-    refreshToken = req.user.refreshToken;
+    discordAccessToken = req.user.accessToken;
+    discordRefreshToken = req.user.refreshToken;
     res.redirect(this.configService.frontendUrl);
   }
 
@@ -45,7 +77,7 @@ export class DiscordAuthService {
         client_id: this.configService.discordClientId,
         client_secret: this.configService.discordClientSecret,
         grant_type: 'refresh_token',
-        refresh_token: refreshToken,
+        refresh_token: discordRefreshToken,
       });
       const { data: credentialsReponse } = await firstValueFrom(
         this.httpService.post<DiscordOAuth2CredentialsResponse>(
@@ -59,106 +91,78 @@ export class DiscordAuthService {
         ),
       );
 
-      accessToken = credentialsReponse.access_token;
-      refreshToken = credentialsReponse.refresh_token;
-      return { accessToken: accessToken, refreshToken: refreshToken };
+      const encryptedAccessToken = await this.encryptToken(credentialsReponse.access_token);
+      const decryptedAccessToken = await this.decryptToken(encryptedAccessToken);
+      const encryptedRefreshToken = await this.encryptToken(credentialsReponse.refresh_token);
+      const decryptedRefreshToken = await this.decryptToken(encryptedRefreshToken);
+      discordAccessToken = decryptedAccessToken.toString(cryptoJs.enc.Utf8);
+      discordRefreshToken = decryptedRefreshToken.toString(cryptoJs.enc.Utf8);
+      return { message: 'authentication with discord successful' };
     } catch (error) {
       throw new BadRequestException(error.response?.data || error.message);
     }
   }
 
-  async getUser() {
+  async getUser(req: Request, res: Response) {
     try {
       const { data: userResponse } = await firstValueFrom(
         this.httpService.get<DiscordOAuth2UserDataResponse>(
           'https://discord.com/api/users/@me',
           {
             headers: {
-              Authorization: `Bearer ${accessToken}`,
+              Authorization: `Bearer ${discordAccessToken}`,
             },
           },
         ),
       );
 
+      discordId = userResponse.id;
+
       const userFound = await this.discordAuthRepository.findByDiscordId(
-        userResponse.id,
+        discordId,
       );
       if (!userFound) {
-        return await this.createUser();
+        const profile = await this.profileService.createProfile();
+        const { id, profileId, role } = await this.createUser(userResponse, profile.id);
+        const payload = { sub: id, profileId: profileId, role: role }
+        const accessToken = await this.jwtService.signAsync(payload, {
+          secret: this.configService.jwtSecret,
+          expiresIn: '15m'
+        });
+        const refreshToken = await this.jwtService.signAsync(payload, {
+          secret: this.configService.jwtRefresh,
+          expiresIn: '1d',
+        });
+        await this.setCookie('refresh_token', res, refreshToken);
+        await this.saveRefreshToken(discordId, refreshToken, req);
+        res.send({ accessToken });
+        return { accessToken }
       } else {
-        return await this.updateUser();
-      }
-    } catch (error) {
-      if (error instanceof NotFoundError)
-        throw new NotFoundException(error.message);
-      else throw new BadRequestException(error.response?.data || error.message);
-    }
-  }
-
-  async createUser() {
-    try {
-      const { data: userResponse } = await firstValueFrom(
-        this.httpService.get<DiscordOAuth2UserDataResponse>(
-          'https://discord.com/api/users/@me',
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          },
-        ),
-      );
-
-      const profile = await this.profileService.createProfile();
-
-      const newUser = new DiscordAuth();
-      newUser.profileId = profile.id;
-      newUser.discordId = userResponse.id;
-      newUser.username = userResponse.username;
-      newUser.email = userResponse.email;
-      newUser.avatar = userResponse.avatar;
-      newUser.discriminator = userResponse.discriminator;
-      await this.discordAuthRepository.save(newUser);
-      return { message: 'user created with discord successfully!', data: userResponse };
-    } catch (error) {
-      throw new BadRequestException(error.response?.data || error.message);
-    }
-  }
-
-  async updateUser() {
-    try {
-      const { data: userResponse } = await firstValueFrom(
-        this.httpService.get<DiscordOAuth2UserDataResponse>(
-          'https://discord.com/api/users/@me',
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          },
-        ),
-      );
-
-      const userFound = await this.discordAuthRepository.findByDiscordId(
-        userResponse.id,
-      );
-      if (userFound) {
-        const discordAuth = new DiscordAuth();
-        discordAuth.id = userFound.id;
-        discordAuth.username = userResponse.username;
-        discordAuth.avatar = userResponse.avatar;
-        discordAuth.discriminator = userResponse.discriminator;
-        await this.discordAuthRepository.update(discordAuth);
-        return { message: 'user updated successfully!', data: userResponse };
+        const payload = { sub: userFound.id, profileId: userFound.profileId, role: userFound.role }
+        const accessToken = await this.jwtService.signAsync(payload, { 
+          secret: this.configService.jwtSecret,
+          expiresIn: '15m'
+        });
+        const refreshToken = await this.jwtService.signAsync(payload, {
+          secret: this.configService.jwtRefresh,
+          expiresIn: '1d',
+        });
+        await this.setCookie('refresh_token', res, refreshToken);
+        await this.updateUser(userResponse);
+        await this.saveRefreshToken(discordId, refreshToken, req);
+        res.send({ accessToken });
+        return { accessToken }
       }
     } catch (error) {
       throw new BadRequestException(error.response?.data || error.message);
     }
   }
 
-  async revokeAuth(res: Response) {
+  async revokeAuth(req: Request, res: Response) {
     const formData = new URLSearchParams({
       client_id: this.configService.discordClientId,
       client_secret: this.configService.discordClientSecret,
-      token: accessToken,
+      token: discordAccessToken,
     });
     try {
       const response = await firstValueFrom(
@@ -172,9 +176,57 @@ export class DiscordAuthService {
           },
         ),
       );
+      await this.removeCookie(res);
+      await this.removeRefreshToken(discordId, req);
       res.send(response.data);
     } catch (error) {
       throw new BadRequestException(error.response?.data || error.message);
     }
+  }
+
+  async createUser(userResponse: DiscordOAuth2UserDataResponse, profileId: number): Promise<DiscordAuth> {
+    const newUser = new DiscordAuth();
+    newUser.profileId = profileId;
+    newUser.discordId = userResponse.id;
+    newUser.username = userResponse.username;
+    newUser.email = userResponse.email;
+    newUser.avatar = userResponse.avatar;
+    newUser.discriminator = userResponse.discriminator;
+    return await this.discordAuthRepository.save(newUser);
+  }
+
+  async updateUser(userResponse: DiscordOAuth2UserDataResponse) {
+    const userFound = await this.discordAuthRepository.findByDiscordId(
+      userResponse.id,
+    );
+    if (userFound) {
+      const discordAuth = new DiscordAuth();
+      discordAuth.id = userFound.id;
+      discordAuth.username = userResponse.username;
+      discordAuth.avatar = userResponse.avatar;
+      await this.discordAuthRepository.update(discordAuth);
+    }
+  }
+
+  async saveRefreshToken(discordId: string, refreshToken: string, req: Request) {
+    const jwtCookie = req.cookies.refresh_token;
+    const userFound = await this.discordAuthRepository.findByDiscordId(discordId)
+    const newRefreshTokenArray = userFound.refreshToken.filter(rt => rt !== jwtCookie);
+    userFound.refreshToken = [...newRefreshTokenArray, refreshToken]
+    const user = new DiscordAuth();
+    user.id = userFound.id;
+    user.refreshToken = userFound.refreshToken;
+    await this.discordAuthRepository.saveRefreshToken(user);
+  }
+
+  async removeRefreshToken(discordId: string, req: Request) {
+    const jwtCookie = req.cookies.refresh_token;
+    const userFound = await this.discordAuthRepository.findByDiscordId(discordId);
+    const newRefreshTokenArray = userFound.refreshToken.filter(rt => rt !== jwtCookie);
+    userFound.refreshToken = [...newRefreshTokenArray];
+    const user = new DiscordAuth();
+    user.id = userFound.id;
+    user.refreshToken = userFound.refreshToken;
+    await this.discordAuthRepository.removeRefreshToken(user);
   }
 }

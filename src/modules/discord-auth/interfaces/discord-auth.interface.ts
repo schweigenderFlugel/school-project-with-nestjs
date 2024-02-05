@@ -10,11 +10,8 @@ export interface IDiscordAuthCreate {
 }
 
 export interface IDiscordAuthUpdate {
-  discordId: string;
-  profileId?: Profile | number;
+  id: number;
   username?: string;
-  email?: string;
   avatar?: string;
-  discriminator?: string;
 }
 

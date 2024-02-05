@@ -19,5 +19,7 @@ export default registerAs('config', () => {
 
     discordClientId: process.env.DISCORD_CLIENT_ID,
     discordClientSecret: process.env.DISCORD_CLIENT_SECRET,
+
+    encryptSecret: process.env.ENCRYPT_SECRET,
   };
 });
