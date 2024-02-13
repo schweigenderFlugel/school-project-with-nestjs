@@ -14,4 +14,3 @@ export interface IDiscordAuthUpdate {
   username?: string;
   avatar?: string;
 }
-

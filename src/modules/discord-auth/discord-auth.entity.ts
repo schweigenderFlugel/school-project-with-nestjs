@@ -10,7 +10,6 @@ import { Profile } from '../profile/profile.entity';
 
 @Entity({ name: 'discord-auth' })
 export class DiscordAuth {
-
   @PrimaryGeneratedColumn()
   id: number;
 

@@ -11,8 +11,8 @@ import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
-    HttpModule, 
-    JwtModule.register({}), 
+    HttpModule,
+    JwtModule.register({}),
     TypeOrmModule.forFeature([DiscordAuth]),
     ProfileModule,
   ],

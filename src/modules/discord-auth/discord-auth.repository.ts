@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { DiscordAuth } from './discord-auth.entity';
 import { IDiscordAuthRepository } from './interfaces/discord-auth.repository.interface';
-import { IDiscordAuthCreate, IDiscordAuthUpdate } from './interfaces/discord-auth.interface';
+import {
+  IDiscordAuthCreate,
+  IDiscordAuthUpdate,
+} from './interfaces/discord-auth.interface';
 
 @Injectable()
 export class DiscordAuthRepository implements IDiscordAuthRepository {
@@ -33,5 +36,4 @@ export class DiscordAuthRepository implements IDiscordAuthRepository {
   async removeRefreshToken(session: DiscordAuth): Promise<void> {
     await this.repository.save(session);
   }
-
 }
