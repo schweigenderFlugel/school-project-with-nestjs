@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Users } from '../users/users.entity';
 
 @Entity({ name: 'profile' })
@@ -26,4 +26,16 @@ export class Profile {
 
   @Column({ type: 'text', nullable: true })
   imageUrl: string;
+
+  @CreateDateColumn({
+    name: 'create_at',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  createdAt: Date;
+
+  @UpdateDateColumn({
+    name: 'updated_at',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  updatedAt: Date;
 }

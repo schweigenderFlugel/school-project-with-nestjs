@@ -13,13 +13,9 @@ const production: DataSourceOptions = {
 };
 
 const development: DataSourceOptions = {
-  type: 'mysql',
-  host: process.env.DB_HOST,
-  port: +process.env.DB_PORT,
-  username: process.env.DB_USERNAME,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE,
-  migrations: ['./data/migrations/**/*.ts'],
+  type: 'better-sqlite3',
+  database: 'devdb.sqlite',
+  entities: [__dirname + '**/*.entity{.ts,.js}'],
   synchronize: true,
 };
 

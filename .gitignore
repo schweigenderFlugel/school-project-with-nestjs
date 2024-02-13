@@ -40,3 +40,6 @@ lerna-debug.log*
 # Images
 *.jpg
 *.png 
+
+# Database
+*.sqlite
