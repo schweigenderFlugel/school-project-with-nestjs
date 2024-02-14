@@ -10,6 +10,7 @@ import { NodemailerModule } from './modules/nodemailer/nodemailer.module';
 import { DiscordAuthModule } from './modules/discord-auth/discord-auth.module';
 import { dataSourceOption } from './ormconfig';
 import config from './config';
+import { CategoryModule } from './modules/category/category.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import config from './config';
     ProfileModule,
     CloudinaryModule,
     NodemailerModule,
+    CategoryModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [config],
