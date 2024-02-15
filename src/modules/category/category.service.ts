@@ -6,7 +6,9 @@ import { CreateCategoryDto, UpdateCategoryDto } from "./category.dto";
 
 @Injectable()
 export class CategoryService {
-  constructor(@Inject(CategoryRepository) private readonly categoryRepository: ICategoryInterface) {}
+  constructor(
+    @Inject(CategoryRepository) private readonly categoryRepository: ICategoryInterface
+  ) {}
 
   async getAll(): Promise<Category[]> {
     return await this.categoryRepository.getAll()
