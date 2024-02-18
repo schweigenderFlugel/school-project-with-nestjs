@@ -28,6 +28,10 @@ const automatedTests: DataSourceOptions = {
   verbose: console.log,
 };
 
+/**
+ * Set the data source option according with the environment
+ * 
+ */
 export const dataSourceOption: DataSourceOptions = (() => {
   if (process.env.NODE_ENV === ENVIRONMENTS.PRODUCTION) {
     return production;

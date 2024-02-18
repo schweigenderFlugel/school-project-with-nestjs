@@ -44,6 +44,14 @@ const productionConfig = (formats: string[]) => {
   };
 };
 
+/**
+ * A function that determines the name of the folder where the files are saved and the formats allowed
+ * 
+ * @param localFolder 
+ * @param formats 
+ * @returns 
+ * 
+ */
 export const uploadFileConfig = (localFolder: string, formats: string[]) => {
   if (process.env.NODE_ENV === ENVIRONMENTS.DEVELOPMENT) {
     return developmentConfig(localFolder, formats);
