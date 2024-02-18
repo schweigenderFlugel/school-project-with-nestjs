@@ -10,7 +10,13 @@ export class CategoryRepository implements ICategoryInterface{
     this.repository = this.dataSource.getRepository(Category);
   }
 
-  async getAll(): Promise<Category[]> {
+  async getAll(limit?: number, offset?: number): Promise<Category[]> {
+    if(limit && offset) {
+      return await this.repository.find({
+        take: limit,
+        skip: offset,
+      });
+    }
     return await this.repository.find();
   }
 

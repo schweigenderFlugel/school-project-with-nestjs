@@ -1,11 +1,26 @@
-import { Controller, Get, Post, Put, Delete, Param, Body, ParseIntPipe, UseGuards } from "@nestjs/common";
+import { 
+  Controller, 
+  Get,
+  Post, 
+  Put, 
+  Delete, 
+  Param, 
+  Query,
+  Body, 
+  ParseIntPipe, 
+  UseGuards, 
+  UseInterceptors, 
+  UploadedFile 
+} from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
+import { FileInterceptor } from "@nestjs/platform-express";
 import { CategoryService } from "./category.service";
 import { CreateCategoryDto, UpdateCategoryDto } from "./category.dto";
 import { IsPublic } from "src/common/decorators/public.decorator";
 import { Roles } from "src/common/decorators/roles.decorator";
 import { JwtGuard } from "src/common/guards/jwt.guard";
 import { Role } from "src/common/models/roles.model";
+import { uploadFileConfig } from "src/file-upload.config";
 
 @ApiTags('Category')
 @ApiBearerAuth()
@@ -17,8 +32,11 @@ export class CategoryController {
   @IsPublic()
   @ApiOperation({ summary: 'get all the categories '})
   @Get()
-  async getCategories() {
-    return await this.categoryService.getAll()
+  async getCategories(
+    @Query('limit') limit: number,
+    @Query('offset') offset: number,
+  ) {
+    return await this.categoryService.getAll(limit, offset)
   }
 
   @IsPublic()
@@ -31,17 +49,24 @@ export class CategoryController {
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'create a new category'})
   @Post()
-  async createCategory(@Body() data: CreateCategoryDto) {
-    return await this.categoryService.create(data);
+  @UseInterceptors(FileInterceptor('image', uploadFileConfig('categories', ['image/jpeg', 'image/png'])))
+  async createCategory(
+    @Body() data: CreateCategoryDto,
+    @UploadedFile() image: Express.Multer.File
+    ) {
+    return await this.categoryService.create(data, image);
   }
 
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'update a category'})
   @Put(':id')
+  @UseInterceptors(FileInterceptor('image', uploadFileConfig('categories', ['image/jpeg', 'image/png'])))
   async updateCategory(
     @Param('id', ParseIntPipe) id: number, 
-    @Body() changes: UpdateCategoryDto) {
-      return await this.categoryService.update(id, changes);
+    @Body() changes: UpdateCategoryDto,
+    @UploadedFile() image: Express.Multer.File,
+    ) {
+      return await this.categoryService.update(id, changes, image);
   }
 
   @Roles(Role.ADMIN)

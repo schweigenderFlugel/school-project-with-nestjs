@@ -4,9 +4,10 @@ import { CategoryController } from "./category.controller";
 import { CategoryService } from "./category.service";
 import { CategoryRepository } from "./category.repository";
 import { Category } from "./category.entity";
+import { CloudinaryModule } from "../cloudinary/cloudinary.module";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Category])],
+  imports: [CloudinaryModule, TypeOrmModule.forFeature([Category])],
   controllers: [CategoryController],
   providers: [CategoryService, CategoryRepository],
 })

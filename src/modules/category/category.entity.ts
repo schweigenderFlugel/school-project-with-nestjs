@@ -11,6 +11,12 @@ export class Category {
   @Column()
   description: string;
 
+  @Column({ name: 'image_url' })
+  imageUrl: string
+
+  @Column({ name: 'public_id', nullable: true })
+  publicId: string;
+
   @CreateDateColumn({
     name: 'created_at',
     default: () => 'CURRENT_TIMESTAMP'
