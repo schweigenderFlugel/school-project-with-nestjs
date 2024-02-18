@@ -5,7 +5,7 @@ import { CloudinaryResponse } from './cloudinary.response';
 
 @Injectable()
 export class CloudinaryService {
-  uploadFile(
+  async uploadFile(
     file: Express.Multer.File,
     folder: string,
   ): Promise<CloudinaryResponse> {
@@ -24,5 +24,16 @@ export class CloudinaryService {
       );
       createReadStream(file.buffer).pipe(uploadStream);
     });
+  }
+
+  async deleteFile(publicId: string): Promise<CloudinaryResponse> {
+    return new Promise<CloudinaryResponse>((resolve, reject) => {
+      const destroyFile = cloudinary.uploader.destroy(publicId,
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        }
+      )
+    })
   }
 }
