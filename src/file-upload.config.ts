@@ -45,7 +45,7 @@ const productionConfig = (formats: string[]) => {
 };
 
 /**
- * A function that determines the name of the folder where the files are saved and the formats allowed
+ * A function that determines the name of the folder where the files will be saved and the formats allowed
  * 
  * @param localFolder 
  * @param formats 
