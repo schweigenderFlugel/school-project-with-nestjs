@@ -12,7 +12,7 @@ import { Role } from '../models/roles.model';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(private readonly reflector: Reflector) {}
 
   canActivate(
     context: ExecutionContext,
