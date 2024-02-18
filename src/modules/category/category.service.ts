@@ -19,7 +19,7 @@ export class CategoryService {
   ) {}
 
   async getAll(limit?: number, offset?: number): Promise<Category[]> {
-    return await this.categoryRepository.getAll()
+    return await this.categoryRepository.getAll(limit, offset)
   }
 
   async getOne(id: number): Promise<Category> {
@@ -79,7 +79,8 @@ export class CategoryService {
   }
 
   async delete(id: number) {
-    await this.getOne(id);
+    const categoryFound = await this.getOne(id);
+    await this.cloudinaryService.deleteFile(categoryFound.publicId);
     await this.categoryRepository.delete(id);
   }
 }

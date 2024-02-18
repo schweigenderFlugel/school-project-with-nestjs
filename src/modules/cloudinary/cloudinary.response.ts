@@ -1,3 +1,5 @@
 import { DeleteApiResponse, UploadApiErrorResponse, UploadApiResponse } from 'cloudinary';
 
-export type CloudinaryResponse = UploadApiResponse | UploadApiErrorResponse | DeleteApiResponse;
+export type CloudinaryUploadResponse = UploadApiResponse | UploadApiErrorResponse;
+
+export type CloudinaryDeleteResponse = DeleteApiResponse;

@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { v2 as cloudinary } from 'cloudinary';
 import { createReadStream } from 'streamifier';
-import { CloudinaryResponse } from './cloudinary.response';
+import { CloudinaryDeleteResponse, CloudinaryUploadResponse } from './cloudinary.response';
 
 @Injectable()
 export class CloudinaryService {
   async uploadFile(
     file: Express.Multer.File,
     folder: string,
-  ): Promise<CloudinaryResponse> {
-    return new Promise<CloudinaryResponse>((resolve, reject) => {
+  ): Promise<CloudinaryUploadResponse> {
+    return new Promise<CloudinaryUploadResponse>((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           folder: folder,
@@ -26,8 +26,8 @@ export class CloudinaryService {
     });
   }
 
-  async deleteFile(publicId: string): Promise<CloudinaryResponse> {
-    return new Promise<CloudinaryResponse>((resolve, reject) => {
+  async deleteFile(publicId: string): Promise<CloudinaryDeleteResponse> {
+    return new Promise<CloudinaryDeleteResponse>((resolve, reject) => {
       const destroyFile = cloudinary.uploader.destroy(publicId,
         (error, result) => {
           if (error) return reject(error);
