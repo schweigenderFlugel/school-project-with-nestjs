@@ -31,7 +31,7 @@ export class AuthService {
   private async setCookie(name: string, res: Response, refreshToken: string): Promise<void> {
     res.cookie(name, refreshToken, {
       httpOnly: true,
-      secure: false,
+      secure: true,
       sameSite: 'none',
       expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });
@@ -40,7 +40,7 @@ export class AuthService {
   private async removeCookie(res: Response): Promise<void> {
     res.clearCookie('refresh_token', {
       httpOnly: true,
-      secure: false,
+      secure: true,
       sameSite: 'none',
     });
   }

@@ -149,7 +149,6 @@ export class DiscordAuthService {
         });
         await this.setCookie('refresh_token', res, refreshToken);
         await this.saveRefreshToken(discordId, refreshToken, req);
-        res.send({ accessToken });
         return { accessToken };
       } else {
         const payload = {
@@ -168,7 +167,6 @@ export class DiscordAuthService {
         await this.setCookie('refresh_token', res, refreshToken);
         await this.updateUser(userResponse);
         await this.saveRefreshToken(discordId, refreshToken, req);
-        res.send({ accessToken });
         return { accessToken };
       }
     } catch (error) {
