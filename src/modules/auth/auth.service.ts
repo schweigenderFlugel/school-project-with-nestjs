@@ -16,6 +16,7 @@ import { UsersService } from '../users/users.service';
 import { NodemailerService } from '../nodemailer/nodemailer.service';
 import { SignUpDto } from './auth.dto';
 import config from '../../config';
+import { Code } from 'src/common/types/generate.code';
 
 @Injectable()
 export class AuthService {
@@ -27,11 +28,7 @@ export class AuthService {
     private readonly nodemailerService: NodemailerService,
   ) {}
 
-  private async setCookie(
-    name: string,
-    res: Response,
-    refreshToken: string,
-  ): Promise<void> {
+  private async setCookie(name: string, res: Response, refreshToken: string): Promise<void> {
     res.cookie(name, refreshToken, {
       httpOnly: true,
       secure: false,
@@ -48,14 +45,27 @@ export class AuthService {
     });
   }
 
+  private async generateCode(): Promise<Code> {
+    const length = 5;
+    let base = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const numbers = '123456789';
+    base += numbers;
+    for (let x = 0; x < length; x++ ) {
+      const random = Math.floor(Math.random() * base.length);
+      const code: Code = `${random}-${random}-${random}-${random}`;
+      return code;
+    }
+  }
+
   async signUp(data: SignUpDto): Promise<object> {
     try {
       if (data.password === data.confirmPassword) {
         const hashedPassword = await bcrypt.hash(data.password, 10);
         data.password = hashedPassword;
+        const code = await this.generateCode();
         await this.usersService.createUser(data);
-        await this.nodemailerService.sendMail(data.email);
-        return { message: 'new user created' };
+        await this.nodemailerService.forSigningUp(data.email, code);
+        return { message: "new user created"}
       } else {
         throw new BadRequestException('the passwords should be equal');
       }
