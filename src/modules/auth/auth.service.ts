@@ -46,25 +46,36 @@ export class AuthService {
   }
 
   private async generateCode(): Promise<Code> {
-    const length = 5;
+    const length = 4;
     let base = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const numbers = '123456789';
     base += numbers;
+    let code1: string = "";
+    let code2: string = "";
+    let code3: string = "";
+    let code4: string = "";
     for (let x = 0; x < length; x++ ) {
-      const random = Math.floor(Math.random() * base.length);
-      const code: Code = `${random}-${random}-${random}-${random}`;
-      return code;
+      const random1 = Math.floor(Math.random() * base.length);
+      const random2 = Math.floor(Math.random() * base.length);
+      const random3 = Math.floor(Math.random() * base.length);
+      const random4 = Math.floor(Math.random() * base.length);
+      code1 += base.charAt(random1);
+      code2 += base.charAt(random2);
+      code3 += base.charAt(random3);
+      code4 += base.charAt(random4);
     }
+    const codeString: Code = `${code1}-${code2}-${code3}-${code4}`;
+    return codeString;
   }
 
   async signUp(data: SignUpDto): Promise<object> {
     try {
       if (data.password === data.confirmPassword) {
         const hashedPassword = await bcrypt.hash(data.password, 10);
+        const activationCode = await this.generateCode();
         data.password = hashedPassword;
-        const code = await this.generateCode();
-        await this.usersService.createUser(data);
-        await this.nodemailerService.forSigningUp(data.email, code);
+        await this.usersService.createUser(data, activationCode);
+        await this.nodemailerService.forSigningUp(data.email, activationCode);
         return { message: "new user created"}
       } else {
         throw new BadRequestException('the passwords should be equal');
@@ -180,16 +191,16 @@ export class AuthService {
     }
   }
 
-  async generateRecoveryToken(user: any): Promise<object> {
+  async generateRecoveryToken(user: any): Promise<void> {
     const userFound = await this.usersService.getUserByEmail(user.email);
     const payload = { sub: userFound.id };
     const recoveryToken = await this.jwtService.signAsync(payload, {
-      expiresIn: '10m',
+      expiresIn: '15m',
       secret: this.configService.jwtRecovery,
     });
-    return {
-      link: `http://localhost:3000/update-password/${recoveryToken}`,
-    };
+    const link = `http://localhost:3000/update-password/${recoveryToken}`;
+    const recoveryCode = await this.generateCode();
+    await this.nodemailerService.forRecoveringPassword(link, recoveryCode, userFound.email);
   }
 
   async updatePassword(token: string, password: string): Promise<string> {

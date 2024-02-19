@@ -39,7 +39,10 @@ export class Users {
   @Column({ default: Role.NORMAL })
   role: string;
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ type: 'varchar', name: 'activation_code', nullable: true })
+  activationCode: string;
+
+  @Column({ type: 'boolean', default: false })
   isActive: boolean;
 
   @CreateDateColumn({

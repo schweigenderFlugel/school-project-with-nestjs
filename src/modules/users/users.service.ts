@@ -64,10 +64,11 @@ export class UsersService {
     return userFound;
   }
 
-  async createUser(data: any) {
+  async createUser(data: any, activationCode: string) {
     try {
       const profileId = await this.profileService.createProfile();
       data.profile = profileId.id;
+      data.activationCode = activationCode;
       await this.usersRepository.create(data);
     } catch (error) {
       throw new ConflictException(error);

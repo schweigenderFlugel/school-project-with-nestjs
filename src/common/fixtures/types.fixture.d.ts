@@ -8,6 +8,7 @@ export class UsersFixture extends OmitType(Users, [
   'updatedAt',
   'refreshToken',
   'recoveryToken',
+  'activationCode'
 ] as const) {
   profile: number;
 }
