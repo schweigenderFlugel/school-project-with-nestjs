@@ -14,7 +14,7 @@ export class UsersRepository implements IUsersRepository {
   async getAll() {
     return await this.repository.find({
       relations: {
-        profileId: true,
+        profile: true,
       },
     });
   }
@@ -22,6 +22,9 @@ export class UsersRepository implements IUsersRepository {
   async findOne(id: number): Promise<Users | null> {
     return this.repository.findOne({
       where: { id: id },
+      relations: {
+        profile: true,
+      },
     });
   }
 
@@ -47,7 +50,9 @@ export class UsersRepository implements IUsersRepository {
   async delete(id: number): Promise<void> {
     const userFound = await this.repository.findOne({
       where: { id: id },
-      relations: ['profile'],
+      relations: {
+        profile: true
+      },
     });
     await this.repository.remove(userFound);
   }

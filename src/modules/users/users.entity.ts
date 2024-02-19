@@ -22,7 +22,7 @@ export class Users {
 
   @OneToOne(() => Profile)
   @JoinColumn({ name: 'profile_id' })
-  profileId: Profile;
+  profile: Profile;
 
   @Column({ type: 'varchar', length: '255', unique: true })
   email: string;
@@ -30,10 +30,10 @@ export class Users {
   @Column({ type: 'varchar', length: '255' })
   password: string;
 
-  @Column({ type: 'json', nullable: true, default: '[]' })
+  @Column({ name: 'refresh_token', type: 'json', nullable: true, default: '[]' })
   refreshToken: string[];
 
-  @Column({ type: 'json', nullable: true, default: '[]' })
+  @Column({ name: 'recovery_token', type: 'json', nullable: true, default: '[]' })
   recoveryToken: string[];
 
   @Column({ default: Role.NORMAL })
@@ -43,7 +43,7 @@ export class Users {
   isActive: boolean;
 
   @CreateDateColumn({
-    name: 'create_at',
+    name: 'created_at',
     default: () => 'CURRENT_TIMESTAMP',
   })
   createdAt: Date;

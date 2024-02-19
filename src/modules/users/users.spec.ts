@@ -1,7 +1,10 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppModule } from './../../app.module';
 import * as request from 'supertest';
+
+import { AppModule } from 'src/app.module'; 
+import { loadFixtures } from 'src/common/fixtures/loader';
+import { adminAccessToken, normalAccessToken } from 'src/common/fixtures/users';
 
 describe('user', () => {
   let app: INestApplication;
@@ -12,7 +15,8 @@ describe('user', () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
-    app.init();
+    await app.init();
+    await loadFixtures(app);
   });
 
   describe('GET /users', () => {
@@ -22,8 +26,6 @@ describe('user', () => {
     });
 
     it('should not be allowed to get users because the role is wrong', async () => {
-      const normalAccessToken =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1NGY0N2E2YS01YjM2LTQ3MzgtOTlkNC1iMzQ3MjNjOWUyZGMiLCJyb2xlIjoibm9ybWFsIiwiaWF0IjoxNzA0NjAwNjg1fQ.XxKQNbDtVEka1-Gh6CvcPGYpQSvTyoQlrnaKPmsOpVg';
       const response = await request(app.getHttpServer())
         .get('/users')
         .auth(normalAccessToken, { type: 'bearer' });
@@ -31,8 +33,6 @@ describe('user', () => {
     });
 
     it('should be allowed to get an array of users', async () => {
-      const adminAccessToken =
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzODNiZmQzNC1kMzY4LTQ5ODEtOTBkYy04NDgxZTQ1ZTkxZGEiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3MDQ2MDA3NDZ9.iPwnpUIJWkbYpKTjg_vcMxD_bjf3Tt06UXDIGA3hln8';
       const response = await request(app.getHttpServer())
         .get('/users')
         .auth(adminAccessToken, { type: 'bearer' });

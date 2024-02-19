@@ -21,11 +21,16 @@ const development: DataSourceOptions = {
 
 const automatedTests: DataSourceOptions = {
   type: 'better-sqlite3',
-  database: `data/tests/test.${Math.random}.sqlite`,
-  migrations: ['./data/migration'],
+  database: `data/tests/test.${Math.random()}.sqlite`,
+  migrations: ['./data/migration/**/*.ts'],
   synchronize: true,
-  dropSchema: true,
+  dropSchema: false,
   verbose: console.log,
+  extra: {
+    onConnect: async (connection) => {
+      await connection.query('PRAGMA foreign_keys = ON;')
+    }
+  }
 };
 
 /**

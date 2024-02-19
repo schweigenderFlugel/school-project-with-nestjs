@@ -8,9 +8,10 @@ import { ProfileModule } from './modules/profile/profile.module';
 import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 import { NodemailerModule } from './modules/nodemailer/nodemailer.module';
 import { DiscordAuthModule } from './modules/discord-auth/discord-auth.module';
+import { CategoryModule } from './modules/category/category.module';
+import { DatabaseLoaderModule } from './common/database-loader/loader.module';
 import { dataSourceOption } from './ormconfig';
 import config from './config';
-import { CategoryModule } from './modules/category/category.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { CategoryModule } from './modules/category/category.module';
     CloudinaryModule,
     NodemailerModule,
     CategoryModule,
+    DatabaseLoaderModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [config],

@@ -15,7 +15,7 @@ export class DiscordAuth {
 
   @OneToOne(() => Profile)
   @JoinColumn({ name: 'profile_id' })
-  profileId: Profile | number;
+  profile: Profile | number;
 
   @Column({ name: 'discord_id', type: 'varchar', unique: true })
   discordId: string;
@@ -35,9 +35,9 @@ export class DiscordAuth {
   @Column({ default: Role.NORMAL })
   role: string;
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive: boolean;
 
-  @Column({ type: 'json', nullable: true, default: '[]' })
+  @Column({ name: 'refresh_token', type: 'json', nullable: true, default: '[]' })
   refreshToken: string[];
 }

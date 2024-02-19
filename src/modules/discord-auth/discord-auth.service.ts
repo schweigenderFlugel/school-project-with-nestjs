@@ -133,12 +133,12 @@ export class DiscordAuthService {
         discordId,
       );
       if (!userFound) {
-        const profile = await this.profileService.createProfile();
-        const { id, profileId, role } = await this.createUser(
+        const newProfile = await this.profileService.createProfile();
+        const { id, profile, role } = await this.createUser(
           userResponse,
-          profile.id,
+          newProfile.id,
         );
-        const payload = { sub: id, profileId: profileId, role: role };
+        const payload = { sub: id, profileId: profile, role: role };
         const accessToken = await this.jwtService.signAsync(payload, {
           secret: this.configService.jwtSecret,
           expiresIn: '15m',
@@ -154,7 +154,7 @@ export class DiscordAuthService {
       } else {
         const payload = {
           sub: userFound.id,
-          profileId: userFound.profileId,
+          profileId: userFound.profile,
           role: userFound.role,
         };
         const accessToken = await this.jwtService.signAsync(payload, {
@@ -207,7 +207,7 @@ export class DiscordAuthService {
     profileId: number,
   ): Promise<DiscordAuth> {
     const newUser = new DiscordAuth();
-    newUser.profileId = profileId;
+    newUser.profile = profileId;
     newUser.discordId = userResponse.id;
     newUser.username = userResponse.username;
     newUser.email = userResponse.email;

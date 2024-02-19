@@ -13,13 +13,13 @@ export class Profile {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => Users, (users) => users.profileId)
+  @OneToOne(() => Users, (users) => users.profile)
   user: Users;
 
   @Column({ type: 'varchar', length: '15', unique: true, nullable: true })
   username: string;
 
-  @Column({ type: 'varchar', length: '50', nullable: true })
+  @Column({ name: 'full_name', type: 'varchar', length: '50', nullable: true })
   fullName: string;
 
   @Column({ type: 'varchar', length: '50', nullable: true })
@@ -31,11 +31,11 @@ export class Profile {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ name: 'image_url', type: 'text', nullable: true })
   imageUrl: string;
 
   @CreateDateColumn({
-    name: 'create_at',
+    name: 'created_at',
     default: () => 'CURRENT_TIMESTAMP',
   })
   createdAt: Date;

@@ -8,15 +8,15 @@ export class UsersFixture extends OmitType(Users, [
   'updatedAt',
   'refreshToken',
   'recoveryToken',
-  'profileId',
-] as const) {}
+] as const) {
+  profile: number;
+}
 
 export class ProfileFixture extends OmitType(Profile, [
   'createdAt',
   'updatedAt',
-] as const) {
-  user: number;
-}
+  'user'
+] as const) {}
 
 export class CategoryFixture extends OmitType(Category, [
   'createdAt',

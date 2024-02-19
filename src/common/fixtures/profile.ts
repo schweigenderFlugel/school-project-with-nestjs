@@ -9,7 +9,6 @@ export const adminProfile: ProfileFixture = {
   phone: 2610000000,
   description: 'this is a administrator of the website',
   imageUrl: 'image',
-  user: adminUser.id,
 }
 
 export const normalProfile: ProfileFixture = {
@@ -20,7 +19,6 @@ export const normalProfile: ProfileFixture = {
   phone: 2610000000,
   description: 'this is a normal user',
   imageUrl: 'image',
-  user: adminUser.id,
 }
 
 export const profileFixture = [adminProfile, normalProfile];

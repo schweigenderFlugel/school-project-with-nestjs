@@ -11,7 +11,7 @@ export class Category {
   @Column()
   description: string;
 
-  @Column({ name: 'image_url' })
+  @Column({ name: 'image_url', nullable: true })
   imageUrl: string
 
   @Column({ name: 'public_id', nullable: true })

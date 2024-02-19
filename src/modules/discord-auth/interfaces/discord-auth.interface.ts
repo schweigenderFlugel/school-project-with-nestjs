@@ -1,7 +1,7 @@
 import { Profile } from 'src/modules/profile/profile.entity';
 
 export interface IDiscordAuthCreate {
-  profileId: Profile | number;
+  profile: Profile | number;
   discordId: string;
   username: string;
   email: string;
