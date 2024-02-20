@@ -37,3 +37,10 @@ export class SignInDto {
   @IsString()
   password: string;
 }
+
+export class ActivationCodeDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  code: string;
+}

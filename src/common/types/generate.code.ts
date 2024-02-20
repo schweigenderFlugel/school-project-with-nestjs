@@ -1,1 +1,0 @@
-export type Code = `${string}-${string}-${string}-${string}`;

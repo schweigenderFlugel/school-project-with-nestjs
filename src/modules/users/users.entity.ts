@@ -12,11 +12,6 @@ import { Profile } from '../profile/profile.entity';
 
 @Entity({ name: 'users' })
 export class Users {
-  constructor(refreshToken: string[], id: number) {
-    this.id = id;
-    this.refreshToken = refreshToken;
-  }
-
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -39,7 +34,7 @@ export class Users {
   @Column({ default: Role.NORMAL })
   role: string;
 
-  @Column({ type: 'varchar', name: 'activation_code', nullable: true })
+  @Column({ name: 'activation_code', type: 'varchar', length: '16', nullable: true })
   activationCode: string;
 
   @Column({ type: 'boolean', default: false })

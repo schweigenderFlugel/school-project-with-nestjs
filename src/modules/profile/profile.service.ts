@@ -47,7 +47,11 @@ export class ProfileService {
   }
 
   async createProfile(): Promise<Profile> {
-    return await this.profileRepository.create();
+    try {
+      return await this.profileRepository.create();
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
   async updateProfile(

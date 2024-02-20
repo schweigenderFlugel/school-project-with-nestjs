@@ -4,6 +4,8 @@ export default registerAs('config', () => {
   return {
     frontendUrl: process.env.FRONTEND_URL,
 
+    httpOnlyCookieName: process.env.HTTPONLY_COOKIE_NAME,
+
     jwtSecret: process.env.JWT_SECRET,
     jwtRefresh: process.env.JWT_REFRESH_SECRET,
     jwtRecovery: process.env.JWT_RECOVERY_SECRET,

@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Repository, DataSource } from 'typeorm';
 import { Users } from './users.entity';
-import { ICreateUser } from './interfaces/users.interface';
 import { IUsersRepository } from './interfaces/users.repository.interface';
 
 @Injectable()
@@ -20,7 +19,7 @@ export class UsersRepository implements IUsersRepository {
   }
 
   async findOne(id: number): Promise<Users | null> {
-    return this.repository.findOne({
+    return await this.repository.findOne({
       where: { id: id },
       relations: {
         profile: true,
@@ -29,22 +28,18 @@ export class UsersRepository implements IUsersRepository {
   }
 
   async findByEmail(email: string): Promise<Users | null> {
-    return this.repository.findOne({
+    return await this.repository.findOne({
       where: { email: email },
     });
   }
 
-  async create(newUser: ICreateUser): Promise<Users> {
+  async create(newUser: Users): Promise<Users> {
     const createUser = this.repository.create(newUser);
     return await this.repository.save(createUser);
   }
 
-  async saveRefreshToken(session: Users): Promise<void> {
-    await this.repository.save(session);
-  }
-
-  async removeRefreshToken(session: Users): Promise<void> {
-    await this.repository.save(session);
+  async update(changes: Partial<Users>): Promise<void> {
+    await this.repository.save(changes);
   }
 
   async delete(id: number): Promise<void> {

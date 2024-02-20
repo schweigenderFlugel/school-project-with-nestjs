@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
-import { Code } from 'src/common/types/generate.code';
 
 @Injectable()
 export class NodemailerService {
   constructor(private readonly mailerService: MailerService) {}
 
-  async forSigningUp(email: string, code: Code): Promise<void> {
+  async forSigningUp(email: string, code: string): Promise<void> {
     const link = 'http://localhost:3000'
     await this.mailerService.sendMail({
       to: 'Welcome <noreply@gmail.com>',

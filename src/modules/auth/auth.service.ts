@@ -14,9 +14,8 @@ import * as bcrypt from 'bcrypt';
 
 import { UsersService } from '../users/users.service';
 import { NodemailerService } from '../nodemailer/nodemailer.service';
-import { SignUpDto } from './auth.dto';
+import { ActivationCodeDto, SignUpDto } from './auth.dto';
 import config from '../../config';
-import { Code } from 'src/common/types/generate.code';
 
 @Injectable()
 export class AuthService {
@@ -28,8 +27,8 @@ export class AuthService {
     private readonly nodemailerService: NodemailerService,
   ) {}
 
-  private async setCookie(name: string, res: Response, refreshToken: string): Promise<void> {
-    res.cookie(name, refreshToken, {
+  private async setCookie(res: Response, refreshToken: string): Promise<void> {
+    res.cookie(this.configService.httpOnlyCookieName, refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
@@ -38,34 +37,24 @@ export class AuthService {
   }
 
   private async removeCookie(res: Response): Promise<void> {
-    res.clearCookie('refresh_token', {
+    res.clearCookie(this.configService.httpOnlyCookieName, {
       httpOnly: true,
       secure: true,
       sameSite: 'none',
     });
   }
 
-  private async generateCode(): Promise<Code> {
-    const length = 4;
+  private async generateCode(): Promise<string> {
+    const length = 16;
     let base = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const numbers = '123456789';
     base += numbers;
-    let code1: string = "";
-    let code2: string = "";
-    let code3: string = "";
-    let code4: string = "";
+    let code: string = "";
     for (let x = 0; x < length; x++ ) {
       const random1 = Math.floor(Math.random() * base.length);
-      const random2 = Math.floor(Math.random() * base.length);
-      const random3 = Math.floor(Math.random() * base.length);
-      const random4 = Math.floor(Math.random() * base.length);
-      code1 += base.charAt(random1);
-      code2 += base.charAt(random2);
-      code3 += base.charAt(random3);
-      code4 += base.charAt(random4);
+      code += base.charAt(random1);
     }
-    const codeString: Code = `${code1}-${code2}-${code3}-${code4}`;
-    return codeString;
+    return code;
   }
 
   async signUp(data: SignUpDto): Promise<object> {
@@ -88,11 +77,19 @@ export class AuthService {
     }
   }
 
+  async activateRegister(id: number, data: ActivationCodeDto) {
+    try {
+      await this.usersService.activateRegister(id, data.code);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
   async validateUser(email: string, password: string): Promise<object> {
     try {
       const userFound = await this.usersService.getUserByEmail(email);
       if (userFound.isActive !== true)
-        throw new ForbiddenException('not allowed to login');
+        throw new ForbiddenException('not allowed to login!');
       const isMatch = await bcrypt.compare(password, userFound.password);
       if (isMatch) {
         return userFound;
@@ -121,7 +118,7 @@ export class AuthService {
           expiresIn: '1d',
           secret: this.configService.jwtRefresh,
         });
-        await this.setCookie('refresh_token', res, refreshToken);
+        await this.setCookie(res, refreshToken);
         await this.usersService.saveRefreshToken(
           user.id,
           jwtCookie,
@@ -167,7 +164,7 @@ export class AuthService {
         secret: this.configService.jwtRefresh,
       });
       await this.removeCookie(res);
-      await this.setCookie('refresh_token', res, newRefreshToken);
+      await this.setCookie(res, newRefreshToken);
       await this.usersService.saveRefreshToken(
         decoded.sub,
         jwtCookie,

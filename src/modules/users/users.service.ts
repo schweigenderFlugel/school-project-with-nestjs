@@ -4,17 +4,15 @@ import {
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
-import { Role } from '../../common/models/roles.model';
+import { Role, RoleTypes } from '../../common/models/roles.model';
 import { UsersRepository } from './users.repository';
 import { IUsersRepository } from './interfaces/users.repository.interface';
 import { Users } from './users.entity';
-import { ProfileService } from '../profile/profile.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @Inject(UsersRepository) private readonly usersRepository: IUsersRepository,
-    private readonly profileService: ProfileService,
   ) {}
 
   private users = [
@@ -66,8 +64,6 @@ export class UsersService {
 
   async createUser(data: any, activationCode: string) {
     try {
-      const profileId = await this.profileService.createProfile();
-      data.profile = profileId.id;
       data.activationCode = activationCode;
       await this.usersRepository.create(data);
     } catch (error) {
@@ -75,33 +71,42 @@ export class UsersService {
     }
   }
 
-  async updateUser(id: string, changes: any) {
-    const userFound = this.users.find((user) => user.id === id);
-    if (!userFound) {
-      throw new NotFoundException('user not found');
+  async activateRegister(id: number, code: string) {
+    const userFound = await this.getUserById(id);
+    if (userFound.activationCode === code) {
+      const user = new Users();
+      user.activationCode = null;
+      user.isActive = true;
+      await this.usersRepository.update(user);
     }
-    const updatedUser = Object.assign(userFound, changes);
-    return updatedUser;
   }
 
   async saveRefreshToken(id: number, jwtCookie: string, refreshToken: string) {
-    const userFound = await this.usersRepository.findOne(id);
+    const userFound = await this.getUserById(id);
     const newRefreshTokenArray = userFound.refreshToken.filter(
       (rt) => rt !== jwtCookie,
     );
     userFound.refreshToken = [...newRefreshTokenArray, refreshToken];
-    const session = new Users(userFound.refreshToken, id);
-    await this.usersRepository.saveRefreshToken(session);
+    const user = new Users();
+    user.refreshToken = userFound.refreshToken;
+    await this.usersRepository.update(user);
   }
 
   async removeRefreshToken(id: number, jwtCookie: string) {
-    const userFound = await this.usersRepository.findOne(id);
+    const userFound = await this.getUserById(id);
     const newRefreshTokenArray = userFound.refreshToken.filter(
       (rt) => rt !== jwtCookie,
     );
     userFound.refreshToken = [...newRefreshTokenArray];
-    const session = new Users(userFound.refreshToken, id);
-    await this.usersRepository.removeRefreshToken(session);
+    const user = new Users();
+    user.refreshToken = userFound.refreshToken;
+    await this.usersRepository.update(user);
+  }
+
+  async changeRole(id: number, role: RoleTypes) {
+    await this.getUserById(id);
+    const user = new Users();
+    user.role = role;
   }
 
   async deleteUser(id: string) {

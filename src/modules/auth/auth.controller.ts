@@ -8,13 +8,14 @@ import {
   Req,
   Res,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 
 import { AuthService } from './auth.service';
-import { SignInDto, SignUpDto } from './auth.dto';
+import { ActivationCodeDto, SignInDto, SignUpDto } from './auth.dto';
 
 @ApiTags('Auth')
 @Controller()
@@ -38,6 +39,15 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     return await this.authService.generateJwt(req.user, req, res);
+  }
+
+  @ApiOperation({ summary: 'to introduce the code and activate register' })
+  @Put('activation/:id')
+  async activateRegister(
+    @Body() data: ActivationCodeDto,
+    @Param('id', ParseIntPipe) id: number
+  ) {
+    return await this.authService.activateRegister(id, data);
   }
 
   @ApiOperation({ summary: 'to get a new access and a refresh token cookie' })
