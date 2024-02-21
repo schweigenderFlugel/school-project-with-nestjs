@@ -65,7 +65,7 @@ export class AuthService {
         data.password = hashedPassword;
         await this.usersService.createUser(data, activationCode);
         await this.nodemailerService.forSigningUp(data.email, activationCode);
-        return { message: "new user created"}
+        return { message: "new user created" }
       } else {
         throw new BadRequestException('the passwords should be equal');
       }
@@ -77,21 +77,21 @@ export class AuthService {
     }
   }
 
-  async activateRegister(id: number, data: ActivationCodeDto) {
+  async activateRegister(data: ActivationCodeDto) {
     try {
-      await this.usersService.activateRegister(id, data.code);
+      await this.usersService.activateRegister(data.code);
+      return { message: "activation successful!"}
     } catch (error) {
-      throw new BadRequestException(error);
+      throw new ForbiddenException(error);
     }
   }
 
   async validateUser(email: string, password: string): Promise<object> {
     try {
       const userFound = await this.usersService.getUserByEmail(email);
-      if (userFound.isActive !== true)
-        throw new ForbiddenException('not allowed to login!');
       const isMatch = await bcrypt.compare(password, userFound.password);
       if (isMatch) {
+        if (userFound.isActive !== true) throw new ForbiddenException('not allowed to login!');
         return userFound;
       }
       return null;
@@ -101,13 +101,12 @@ export class AuthService {
     }
   }
 
-  async generateJwt(user: any, req: Request, res: Response): Promise<object> {
+  async generateJwt(user: any, req: Request, res: Response) {
     try {
       const jwtCookie = req.cookies.refresh_token;
       if (!jwtCookie) {
         const payload = {
           sub: user.id,
-          profileId: user.profileId,
           role: user.role,
         };
         const accessToken = await this.jwtService.signAsync(payload, {

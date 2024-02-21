@@ -10,26 +10,21 @@ export class UsersRepository implements IUsersRepository {
     this.repository = this.dataSource.getRepository(Users);
   }
 
-  async getAll() {
-    return await this.repository.find({
-      relations: {
-        profile: true,
-      },
-    });
-  }
-
   async findOne(id: number): Promise<Users | null> {
     return await this.repository.findOne({
       where: { id: id },
-      relations: {
-        profile: true,
-      },
     });
   }
 
   async findByEmail(email: string): Promise<Users | null> {
     return await this.repository.findOne({
       where: { email: email },
+    });
+  }
+
+  async findByCode(code: string): Promise<Users | null> {
+    return await this.repository.findOne({
+      where: { activationCode: code },
     });
   }
 
@@ -45,9 +40,6 @@ export class UsersRepository implements IUsersRepository {
   async delete(id: number): Promise<void> {
     const userFound = await this.repository.findOne({
       where: { id: id },
-      relations: {
-        profile: true
-      },
     });
     await this.repository.remove(userFound);
   }

@@ -22,27 +22,11 @@ import { ChangeRoleDto } from './users.dto';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @ApiOperation({ summary: 'list of users' })
-  @Get()
-  async getUsers() {
-    return this.usersService.getUsers();
-  }
-
-  @Get('/:email')
-  async getUserByEmail(@Param('email') email: string) {
-    return this.usersService.getUserByEmail(email);
-  }
-
   @ApiOperation({ summary: 'change the role of the user' })
   @UseGuards(JwtGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Put(':id')
   async changeUserRole(@Param('id', ParseIntPipe) id: number, @Body() role: ChangeRoleDto) {
     return this.usersService.changeRole(id, role.role);
-  }
-
-  @Delete(':id')
-  async deleteUser(@Param('id') id: string) {
-    this.usersService.deleteUser(id);
   }
 }

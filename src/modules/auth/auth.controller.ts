@@ -8,7 +8,6 @@ import {
   Req,
   Res,
   UseGuards,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
@@ -42,12 +41,9 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'to introduce the code and activate register' })
-  @Put('activation/:id')
-  async activateRegister(
-    @Body() data: ActivationCodeDto,
-    @Param('id', ParseIntPipe) id: number
-  ) {
-    return await this.authService.activateRegister(id, data);
+  @Post('activation')
+  async activateRegister(@Body() data: ActivationCodeDto) {
+    return await this.authService.activateRegister(data);
   }
 
   @ApiOperation({ summary: 'to get a new access and a refresh token cookie' })

@@ -26,11 +26,6 @@ const automatedTests: DataSourceOptions = {
   synchronize: true,
   dropSchema: false,
   verbose: console.log,
-  extra: {
-    onConnect: async (connection) => {
-      await connection.query('PRAGMA foreign_keys = ON;')
-    }
-  }
 };
 
 /**

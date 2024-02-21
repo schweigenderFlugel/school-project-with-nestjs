@@ -40,17 +40,11 @@ export class UsersService {
     },
   ];
 
-  async getUsers() {
-    return this.usersRepository.getAll();
-  }
-
   async getUserById(id: number) {
     const userFound = await this.usersRepository.findOne(id);
     if (!userFound) {
-      throw new NotFoundException('user not found');
+      throw new NotFoundException('user not found!');
     }
-    delete userFound.refreshToken;
-    delete userFound.recoveryToken;
     return userFound;
   }
 
@@ -71,13 +65,16 @@ export class UsersService {
     }
   }
 
-  async activateRegister(id: number, code: string) {
-    const userFound = await this.getUserById(id);
+  async activateRegister(code: string) {
+    const userFound = await this.usersRepository.findByCode(code);
     if (userFound.activationCode === code) {
-      const user = new Users();
-      user.activationCode = null;
-      user.isActive = true;
-      await this.usersRepository.update(user);
+      const changes = new Users();
+      changes.id = userFound.id;
+      changes.email = userFound.email;
+      changes.password = userFound.password;
+      changes.activationCode = null;
+      changes.isActive = true;
+      await this.usersRepository.update(changes);
     }
   }
 
@@ -87,9 +84,10 @@ export class UsersService {
       (rt) => rt !== jwtCookie,
     );
     userFound.refreshToken = [...newRefreshTokenArray, refreshToken];
-    const user = new Users();
-    user.refreshToken = userFound.refreshToken;
-    await this.usersRepository.update(user);
+    const changes = new Users();
+    changes.id = id;
+    changes.refreshToken = userFound.refreshToken;
+    await this.usersRepository.update(changes);
   }
 
   async removeRefreshToken(id: number, jwtCookie: string) {
@@ -99,6 +97,7 @@ export class UsersService {
     );
     userFound.refreshToken = [...newRefreshTokenArray];
     const user = new Users();
+    user.id = id;
     user.refreshToken = userFound.refreshToken;
     await this.usersRepository.update(user);
   }
@@ -106,7 +105,9 @@ export class UsersService {
   async changeRole(id: number, role: RoleTypes) {
     await this.getUserById(id);
     const user = new Users();
+    user.id = id;
     user.role = role;
+    await this.usersRepository.update(user);
   }
 
   async deleteUser(id: string) {

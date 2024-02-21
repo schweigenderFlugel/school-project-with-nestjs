@@ -13,7 +13,7 @@ export class Profile {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => Users, (users) => users.profile, { cascade: true })
+  @OneToOne(() => Users, (users) => users.profile)
   user: Users;
 
   @Column({ type: 'varchar', length: '15', unique: true, nullable: true })
