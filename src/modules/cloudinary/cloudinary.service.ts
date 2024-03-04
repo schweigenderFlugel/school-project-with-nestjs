@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { v2 as cloudinary } from 'cloudinary';
+import { UploadApiOptions, v2 as cloudinary } from 'cloudinary';
 import { createReadStream } from 'streamifier';
 import { CloudinaryDeleteResponse, CloudinaryUploadResponse } from './cloudinary.response';
 
@@ -10,13 +10,13 @@ export class CloudinaryService {
     folder: string,
   ): Promise<CloudinaryUploadResponse> {
     return new Promise<CloudinaryUploadResponse>((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
+      const options: UploadApiOptions = {
           folder: folder,
           use_filename: true,
           unique_filename: true,
           overwrite: true,
-        },
+        }
+      const uploadStream = cloudinary.uploader.upload_stream(options,
         (error, result) => {
           if (error) return reject(error);
           resolve(result);

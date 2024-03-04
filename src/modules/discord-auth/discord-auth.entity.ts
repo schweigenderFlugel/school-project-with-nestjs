@@ -2,17 +2,14 @@ import { Role } from '../../common/models/roles.model';
 import {
   Entity,
   Column,
-  PrimaryGeneratedColumn,
   JoinColumn,
   OneToOne,
 } from 'typeorm';
 import { Profile } from '../profile/profile.entity';
+import { Base } from 'src/common/entity/base.entity';
 
 @Entity({ name: 'discord-auth' })
-export class DiscordAuth {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class DiscordAuth extends Base {
   @OneToOne(() => Profile)
   @JoinColumn({ name: 'profile_id' })
   profile: Profile | number;

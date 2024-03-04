@@ -15,6 +15,7 @@ import { JwtGuard } from '../../common/guards/jwt.guard';
 import { ProfileService } from './profile.service';
 import { UpdateProfileDto } from './profile.dto';
 import { uploadFileConfig } from '../../file-upload.config';
+import { UserRequest } from 'src/common/interfaces/user-request.interface';
 
 @UseGuards(JwtGuard)
 @ApiBearerAuth()
@@ -24,8 +25,8 @@ export class ProfileController {
   constructor(private profileService: ProfileService) {}
 
   @Get()
-  async getProfile(@Req() req: Request) {
-    return await this.profileService.getProfile(req.user);
+  async getProfile(@Req() req: UserRequest) {
+    return await this.profileService.getProfile(req);
   }
 
   @Put()
@@ -36,10 +37,10 @@ export class ProfileController {
     ),
   )
   async updateProfile(
-    @Req() req: Request,
+    @Req() req: UserRequest,
     @Body() changes: UpdateProfileDto,
     @UploadedFile() image: Express.Multer.File,
   ) {
-    return await this.profileService.updateProfile(req.user, changes, image);
+    return await this.profileService.updateProfile(req, changes, image);
   }
 }

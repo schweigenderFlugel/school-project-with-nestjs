@@ -1,6 +1,6 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import * as fs from 'node:fs';
-import * as dotenv from 'dotenv';
 
 import { ENVIRONMENTS } from '../../environments';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
@@ -8,14 +8,15 @@ import { UpdateProfileDto } from './profile.dto';
 import { ProfileRepository } from './profile.repository';
 import { IProfileRepository } from './interfaces/profile.repository.interface';
 import { Profile } from './profile.entity';
-
-dotenv.config();
+import { UserRequest } from 'src/common/interfaces/user-request.interface';
+import config from '../../config';
 
 @Injectable()
 export class ProfileService {
   constructor(
     @Inject(ProfileRepository)
     private readonly profileRepository: IProfileRepository,
+    @Inject(config.KEY) private readonly configService: ConfigType<typeof config>,
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
@@ -40,9 +41,20 @@ export class ProfileService {
     },
   ];
 
-  async getProfile(user: any) {
-    const profileFound = await this.profileRepository.findById(user.profileId);
-    if (!profileFound) throw new NotFoundException('profile not found');
+  async getProfile(req: UserRequest): Promise<Profile> {
+    const profileFound = await this.profileRepository.findById(req.user.profile);
+    if (!profileFound) throw new NotFoundException('profile not found!');
+    if(profileFound) {
+      if (!profileFound.username && 
+          !profileFound.fullName && 
+          !profileFound.address && 
+          !profileFound.description && 
+          !profileFound.phone &&
+          !profileFound.imageUrl) 
+      {
+        return null;
+      }
+    }
     return profileFound;
   }
 
@@ -50,24 +62,24 @@ export class ProfileService {
     try {
       return await this.profileRepository.create();
     } catch (error) {
-      throw new Error(error);
+      throw new BadRequestException(error);
     }
   }
 
   async updateProfile(
-    user: any,
+    req: UserRequest,
     changes: UpdateProfileDto,
     image: Express.Multer.File,
   ) {
-    const profileFound = await this.profileRepository.findById(user.profileId);
+    const profileFound = await this.profileRepository.findById(req.user.profile);
     if (!profileFound) throw new NotFoundException('profile not found');
 
-    if (process.env.NODE_ENV === ENVIRONMENTS.PRODUCTION) {
+    if (this.configService.nodeEnv === ENVIRONMENTS.PRODUCTION) {
       const result = await this.cloudinaryService.uploadFile(image, 'profile');
       profileFound.imageUrl = result.secure_url;
       const updatedProfile = await this.profileRepository.update(profileFound);
       return updatedProfile;
-    } else if (process.env.NODE_ENV === ENVIRONMENTS.DEVELOPMENT) {
+    } else if (this.configService.nodeEnv === ENVIRONMENTS.DEVELOPMENT) {
       fs.unlink(`${profileFound.imageUrl}`, (err) => {
         if (err) {
           profileFound.imageUrl = image?.path;

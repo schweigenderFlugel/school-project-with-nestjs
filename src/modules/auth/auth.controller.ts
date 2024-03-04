@@ -15,6 +15,7 @@ import { Request, Response } from 'express';
 
 import { AuthService } from './auth.service';
 import { ActivationCodeDto, SignInDto, SignUpDto } from './auth.dto';
+import { UserRequest } from 'src/common/interfaces/user-request.interface';
 
 @ApiTags('Auth')
 @Controller()
@@ -34,10 +35,10 @@ export class AuthController {
   @Post('sign-in')
   async signIn(
     @Body() data: SignInDto,
-    @Req() req: Request,
+    @Req() req: UserRequest,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return await this.authService.generateJwt(req.user, req, res);
+    return await this.authService.generateJwt(req, res);
   }
 
   @ApiOperation({ summary: 'to introduce the code and activate register' })
@@ -73,9 +74,9 @@ export class AuthController {
   // @UseGuards(AuthGuard('refresh-jwt'))
   @Get('sign-out')
   async signOut(
-    @Req() req: Request,
+    @Req() req: UserRequest,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return await this.authService.signOut(req.cookies.refresh_token, res);
+    return await this.authService.signOut(req, res);
   }
 }

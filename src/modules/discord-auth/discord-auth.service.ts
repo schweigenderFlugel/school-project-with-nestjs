@@ -15,6 +15,7 @@ import { DiscordAuthRepository } from './discord-auth.repository';
 import { IDiscordAuthRepository } from './interfaces/discord-auth.repository.interface';
 import { ProfileService } from '../profile/profile.service';
 import config from '../../config';
+import { JwtTokens, Payload } from 'src/common/interfaces/user-request.interface';
 
 let discordId: string;
 let discordAccessToken: string;
@@ -45,6 +46,18 @@ export class DiscordAuthService {
       encryptedToken,
       this.configService.encryptSecret,
     );
+  }
+
+  private async getTokens(payload: any): Promise<JwtTokens> {
+    const accessToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '10m',
+      secret: this.configService.jwtSecret,
+    });
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '1d',
+      secret: this.configService.jwtRefresh,
+    });
+    return { accessToken, refreshToken };
   }
 
   private async setCookie(
@@ -138,32 +151,18 @@ export class DiscordAuthService {
           userResponse,
           newProfile.id,
         );
-        const payload = { sub: id, profileId: profile, role: role };
-        const accessToken = await this.jwtService.signAsync(payload, {
-          secret: this.configService.jwtSecret,
-          expiresIn: '15m',
-        });
-        const refreshToken = await this.jwtService.signAsync(payload, {
-          secret: this.configService.jwtRefresh,
-          expiresIn: '1d',
-        });
+        const payload = { sub: id, role: role, profile: profile };
+        const { accessToken, refreshToken } = await this.getTokens(payload);
         await this.setCookie('refresh_token', res, refreshToken);
         await this.saveRefreshToken(discordId, refreshToken, req);
         return { accessToken };
       } else {
         const payload = {
           sub: userFound.id,
-          profileId: userFound.profile,
           role: userFound.role,
+          profile: userFound.profile,
         };
-        const accessToken = await this.jwtService.signAsync(payload, {
-          secret: this.configService.jwtSecret,
-          expiresIn: '15m',
-        });
-        const refreshToken = await this.jwtService.signAsync(payload, {
-          secret: this.configService.jwtRefresh,
-          expiresIn: '1d',
-        });
+        const { accessToken, refreshToken } = await this.getTokens(payload);
         await this.setCookie('refresh_token', res, refreshToken);
         await this.updateUser(userResponse);
         await this.saveRefreshToken(discordId, refreshToken, req);

@@ -2,10 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 import { DiscordAuth } from './discord-auth.entity';
 import { IDiscordAuthRepository } from './interfaces/discord-auth.repository.interface';
-import {
-  IDiscordAuthCreate,
-  IDiscordAuthUpdate,
-} from './interfaces/discord-auth.interface';
 
 @Injectable()
 export class DiscordAuthRepository implements IDiscordAuthRepository {
@@ -20,12 +16,12 @@ export class DiscordAuthRepository implements IDiscordAuthRepository {
     });
   }
 
-  async save(data: IDiscordAuthCreate): Promise<DiscordAuth> {
+  async save(data: DiscordAuth): Promise<DiscordAuth> {
     const newUser = this.repository.create(data);
     return await this.repository.save(newUser);
   }
 
-  async update(changes: IDiscordAuthUpdate): Promise<void> {
+  async update(changes: Partial<DiscordAuth>): Promise<void> {
     await this.repository.save(changes);
   }
 

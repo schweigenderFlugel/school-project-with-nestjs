@@ -1,23 +1,18 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
-  CreateDateColumn,
-  UpdateDateColumn,
   OneToOne,
   JoinColumn,
 } from 'typeorm';
-import { Role } from '../../common/models/roles.model';
+import { Base } from 'src/common/entity/base.entity';
 import { Profile } from '../profile/profile.entity';
+import { Role } from 'src/common/models/roles.model';
 
 @Entity({ name: 'users' })
-export class Users {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class Users extends Base {
   @OneToOne(() => Profile, { cascade: true })
   @JoinColumn({ name: 'profile_id' })
-  profile: Profile;
+  profile: Profile | number;
 
   @Column({ type: 'varchar', length: '255', unique: true })
   email: string;
@@ -39,16 +34,4 @@ export class Users {
 
   @Column({ type: 'boolean', default: false })
   isActive: boolean;
-
-  @CreateDateColumn({
-    name: 'created_at',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  createdAt: Date;
-
-  @UpdateDateColumn({
-    name: 'updated_at',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date;
 }

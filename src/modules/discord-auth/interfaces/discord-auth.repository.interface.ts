@@ -6,8 +6,8 @@ import {
 
 export interface IDiscordAuthRepository {
   findByDiscordId(email: string): Promise<DiscordAuth>;
-  save(data: IDiscordAuthCreate): Promise<DiscordAuth>;
-  update(changes: IDiscordAuthUpdate): Promise<void>;
+  save(data: DiscordAuth): Promise<DiscordAuth>;
+  update(changes: Partial<DiscordAuth>): Promise<void>;
   saveRefreshToken(session: DiscordAuth): Promise<void>;
   removeRefreshToken(session: DiscordAuth): Promise<void>;
 }

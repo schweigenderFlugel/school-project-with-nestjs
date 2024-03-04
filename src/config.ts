@@ -2,6 +2,8 @@ import { registerAs } from '@nestjs/config';
 
 export default registerAs('config', () => {
   return {
+    nodeEnv: process.env.NODE_ENV,
+
     frontendUrl: process.env.FRONTEND_URL,
 
     httpOnlyCookieName: process.env.HTTPONLY_COOKIE_NAME,

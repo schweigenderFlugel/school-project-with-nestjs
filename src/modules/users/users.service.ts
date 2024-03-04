@@ -8,6 +8,7 @@ import { Role, RoleTypes } from '../../common/models/roles.model';
 import { UsersRepository } from './users.repository';
 import { IUsersRepository } from './interfaces/users.repository.interface';
 import { Users } from './users.entity';
+import { NewUser } from './interfaces/new-user.interface';
 
 @Injectable()
 export class UsersService {
@@ -48,7 +49,7 @@ export class UsersService {
     return userFound;
   }
 
-  async getUserByEmail(email: string) {
+  async getUserByEmail(email: string): Promise<Users> {
     const userFound = await this.usersRepository.findByEmail(email);
     if (!userFound) {
       throw new NotFoundException('user not found!');
@@ -56,10 +57,14 @@ export class UsersService {
     return userFound;
   }
 
-  async createUser(data: any, activationCode: string) {
+  async createUser(newUser: NewUser) {
     try {
-      data.activationCode = activationCode;
-      await this.usersRepository.create(data);
+      const users = new Users();
+      users.email = newUser.email;
+      users.password = newUser.password;
+      users.profile = newUser.profile;
+      users.activationCode = newUser.activationCode;
+      await this.usersRepository.create(users);
     } catch (error) {
       throw new ConflictException(error);
     }
